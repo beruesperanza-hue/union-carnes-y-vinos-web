@@ -172,7 +172,7 @@ export default function Home() {
           Reservá tu mesa esta semana
         </h2>
         <p className="font-body text-brasa-900/70 max-w-[48ch] mx-auto mb-8">
-          Cenas de martes a domingo. Grupos, celebraciones y sobremesas largas — con vino en la
+          Cenas de jueves a domingo. Grupos, celebraciones y sobremesas largas — con vino en la
           copa.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">

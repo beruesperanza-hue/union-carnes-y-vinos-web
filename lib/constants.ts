@@ -39,20 +39,19 @@ export const NEGOCIO = {
   tripadvisorUrl:
     'https://www.tripadvisor.com/Restaurant_Review-g187529-d18901675-Reviews-Union_Carnes_Y_Vinos-Valencia_Province_of_Valencia_Valencian_Community.html',
 
-  // Horario real (verificado en Tripadvisor, jul-2026): solo cenas.
+  // Horario real (corregido jul-2026): cenas de jueves a domingo, mismo horario los 4 días.
   horario: [
-    { dia: 'Lunes', horas: '19:30–23:00' },
+    { dia: 'Lunes', horas: 'Cerrado' },
     { dia: 'Martes', horas: 'Cerrado' },
     { dia: 'Miércoles', horas: 'Cerrado' },
-    { dia: 'Jueves', horas: 'Cerrado' },
+    { dia: 'Jueves', horas: '19:30–23:30' },
     { dia: 'Viernes', horas: '19:30–23:30' },
     { dia: 'Sábado', horas: '19:30–23:30' },
-    { dia: 'Domingo', horas: '19:30–23:00' },
+    { dia: 'Domingo', horas: '19:30–23:30' },
   ],
   // Formato schema.org openingHoursSpecification (día ISO corto).
   horarioSchema: [
-    { dias: ['Monday', 'Sunday'], abre: '19:30', cierra: '23:00' },
-    { dias: ['Friday', 'Saturday'], abre: '19:30', cierra: '23:30' },
+    { dias: ['Thursday', 'Friday', 'Saturday', 'Sunday'], abre: '19:30', cierra: '23:30' },
   ],
 
   precioMedio: '20 €',

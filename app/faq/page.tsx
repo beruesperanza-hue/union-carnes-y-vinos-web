@@ -43,7 +43,7 @@ const PREGUNTAS = [
   {
     pregunta: '¿Qué días están abiertos?',
     respuesta:
-      'Abrimos para cenas domingo, lunes, viernes y sábado de 19:30 a 23:00/23:30. Martes, miércoles y jueves permanecemos cerrados.',
+      'Abrimos para cenas de jueves a domingo, de 19:30 a 23:30. Lunes, martes y miércoles permanecemos cerrados.',
   },
   {
     pregunta: '¿Dónde queda Unión Carnes y Vinos?',

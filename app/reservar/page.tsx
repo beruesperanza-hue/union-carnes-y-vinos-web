@@ -7,7 +7,7 @@ import { NEGOCIO } from '@/lib/constants';
 export const metadata: Metadata = {
   title: 'Reservar Mesa',
   description:
-    'Reservá online en segundos o escribinos por WhatsApp. Abierto para cenas de martes a domingo. Carrer de Puerto Rico 38, Ruzafa, Valencia.',
+    'Reservá online en segundos o escribinos por WhatsApp. Abierto para cenas de jueves a domingo. Carrer de Puerto Rico 38, Ruzafa, Valencia.',
   alternates: { canonical: '/reservar' },
 };
 

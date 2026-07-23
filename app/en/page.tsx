@@ -146,7 +146,7 @@ export default function HomeEN() {
           Book your table this week
         </h2>
         <p className="font-body text-brasa-900/70 max-w-[48ch] mx-auto mb-8">
-          Open for dinner Sunday, Monday, Friday & Saturday. Groups, celebrations, long dinners —
+          Open for dinner Thursday through Sunday. Groups, celebrations, long dinners —
           wine included.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
