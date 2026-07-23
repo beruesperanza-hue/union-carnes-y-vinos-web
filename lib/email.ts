@@ -19,8 +19,11 @@ oauth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
 const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
-function encodeSubject(subject: string): string {
-  return `=?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`;
+// RFC 2047 encoded-word — necesario para cualquier header con tildes/ñ
+// (Subject y el nombre visible del remitente), si no el cliente de mail
+// puede mostrarlo mal codificado (ej. "Unión" -> "UniÃ³n").
+function encodeWord(texto: string): string {
+  return `=?UTF-8?B?${Buffer.from(texto).toString('base64')}?=`;
 }
 
 function base64Body(text: string): string {
@@ -31,9 +34,9 @@ function buildRawMessage(to: string, subject: string, html: string, text: string
   const boundary = `union_${Date.now().toString(36)}`;
 
   const message = [
-    `From: ${NEGOCIO.nombre} <${FROM}>`,
+    `From: ${encodeWord(NEGOCIO.nombre)} <${FROM}>`,
     `To: ${to}`,
-    `Subject: ${encodeSubject(subject)}`,
+    `Subject: ${encodeWord(subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     '',
