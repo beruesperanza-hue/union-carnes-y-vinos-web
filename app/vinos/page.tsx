@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
@@ -91,9 +92,9 @@ export default function VinosPage() {
       </section>
 
       <section className="container-page pb-20 text-center">
-        <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember">
+        <Link href="/reservar" className="btn btn-ember">
           Reservar mesa
-        </a>
+        </Link>
       </section>
 
       <Footer />

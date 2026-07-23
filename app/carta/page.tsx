@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
@@ -97,9 +98,9 @@ export default function CartaPage() {
         <p className="font-body text-brasa-900/60 text-sm max-w-[50ch] mx-auto mb-6">
           Precio medio {NEGOCIO.precioMedio} por persona. Alérgenos disponibles a pedido en sala.
         </p>
-        <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember">
+        <Link href="/reservar" className="btn btn-ember">
           Reservar mesa
-        </a>
+        </Link>
       </section>
 
       <Footer />

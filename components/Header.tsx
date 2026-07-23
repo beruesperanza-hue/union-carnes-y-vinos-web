@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Wordmark from './Wordmark';
-import { NEGOCIO } from '@/lib/constants';
 
 const NAV_ES = [
   { href: '/carta', label: 'La carta' },
@@ -42,9 +41,9 @@ export default function Header() {
           >
             {esIngles ? 'ES' : 'EN'}
           </Link>
-          <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember !py-2.5 !px-5 !text-[13px]">
+          <Link href="/reservar" className="btn btn-ember !py-2.5 !px-5 !text-[13px]">
             {esIngles ? 'Book a table' : 'Reservar'}
-          </a>
+          </Link>
         </nav>
 
         <button
@@ -83,14 +82,13 @@ export default function Header() {
             >
               {esIngles ? 'Ver en Español' : 'View in English'}
             </Link>
-            <a
-              href={NEGOCIO.theforkUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/reservar"
+              onClick={() => setAbierto(false)}
               className="btn btn-ember mt-3 w-full"
             >
               {esIngles ? 'Book a table' : 'Reservar mesa'}
-            </a>
+            </Link>
           </div>
         </div>
       )}

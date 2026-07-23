@@ -39,9 +39,9 @@ export default function HomeEN() {
               empanadas, and a wine list built to match them.
             </p>
             <div className="flex flex-wrap gap-3 mt-8">
-              <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember">
+              <Link href="/reservar" className="btn btn-ember">
                 Book a table
-              </a>
+              </Link>
               <Link href="/en/carta" className="btn btn-outline">
                 View the menu
               </Link>
@@ -105,9 +105,9 @@ export default function HomeEN() {
             neighbourhood parrilla they grew up with to Valencia. Reimagined in 2024 under new
             family ownership, it now pairs modern technique with the same fire as always.
           </p>
-          <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-line">
+          <Link href="/reservar" className="btn btn-line">
             Book a table
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -150,9 +150,9 @@ export default function HomeEN() {
           wine included.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
-          <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember">
-            Book on TheFork
-          </a>
+          <Link href="/reservar" className="btn btn-ember">
+            Book a table
+          </Link>
           <a href={NEGOCIO.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-line">
             Message us on WhatsApp
           </a>

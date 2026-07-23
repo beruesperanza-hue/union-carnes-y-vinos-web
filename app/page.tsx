@@ -32,9 +32,9 @@ export default function Home() {
               cortadas a cuchillo y una bodega de Malbec pensada para acompañarlos.
             </p>
             <div className="flex flex-wrap gap-3 mt-8">
-              <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember">
+              <Link href="/reservar" className="btn btn-ember">
                 Reservar mesa
-              </a>
+              </Link>
               <Link href="/carta" className="btn btn-outline">
                 Ver la carta
               </Link>
@@ -176,9 +176,9 @@ export default function Home() {
           copa.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
-          <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember">
-            Reservar en TheFork
-          </a>
+          <Link href="/reservar" className="btn btn-ember">
+            Reservar mesa
+          </Link>
           <a href={NEGOCIO.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-line">
             Escribir por WhatsApp
           </a>

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
-import { NEGOCIO } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Nuestra Historia — De Buenos Aires a Ruzafa',
@@ -59,9 +59,9 @@ export default function HistoriaPage() {
             La entraña vuelta y vuelta sigue siendo el plato que todos piden. El fuego, el mismo
             de siempre.
           </p>
-          <a href={NEGOCIO.theforkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ember mt-4">
+          <Link href="/reservar" className="btn btn-ember mt-4">
             Reservar mesa
-          </a>
+          </Link>
         </div>
       </section>
 

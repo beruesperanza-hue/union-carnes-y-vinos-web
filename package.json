@@ -2,18 +2,28 @@
   "name": "union-carnes-y-vinos-web",
   "version": "1.0.0",
   "private": true,
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "node prisma/check-and-seed.js && next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@prisma/client": "^5.19.0",
+    "bcryptjs": "^2.4.3",
+    "googleapis": "^173.0.0",
     "next": "^15.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
     "@types/node": "^20.14.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -21,6 +31,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.0.0",
     "postcss": "^8.4.38",
+    "prisma": "^5.19.0",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.6.3"
   }

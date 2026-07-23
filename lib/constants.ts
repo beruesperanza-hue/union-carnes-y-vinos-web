@@ -57,3 +57,51 @@ export const NEGOCIO = {
   precioMedio: '20 €',
   rangoPrecios: '€€',
 };
+
+export const DIAS_SEMANA_ORDEN = [
+  'lunes',
+  'martes',
+  'miércoles',
+  'jueves',
+  'viernes',
+  'sábado',
+  'domingo',
+];
+
+export const DIA_NUMERO_A_NOMBRE: Record<number, string> = {
+  0: 'domingo',
+  1: 'lunes',
+  2: 'martes',
+  3: 'miércoles',
+  4: 'jueves',
+  5: 'viernes',
+  6: 'sábado',
+};
+
+// Dónde quiere sentarse el cliente: adentro o en la terraza de la calle.
+export const UBICACIONES = {
+  ADENTRO: 'adentro',
+  VEREDA: 'vereda',
+} as const;
+
+export const UBICACIONES_LABEL: Record<string, string> = {
+  [UBICACIONES.ADENTRO]: 'Adentro',
+  [UBICACIONES.VEREDA]: 'En la terraza',
+};
+
+export const ESTADOS_RESERVA = {
+  CONFIRMADA: 'confirmada',
+  CANCELADA: 'cancelada',
+  PENDIENTE: 'pendiente',
+};
+
+export const MENSAJES = {
+  RESERVA_EXITOSA: '¡Gracias! Tu reserva fue realizada correctamente.',
+  RESERVA_DUPLICADA: 'Ya existe una reserva para este horario con tu email.',
+  HORARIO_LLENO: 'Lo siento, este horario está completamente lleno.',
+  TURNO_PASADO: 'Ese horario ya pasó. Elegí uno más tarde o para otro día.',
+  TURNO_CERRADO: 'Ese turno no está disponible por el momento.',
+  RESERVA_NO_ENCONTRADA: 'La reserva no fue encontrada.',
+  CANCELA_EXITOSA: 'Tu reserva ha sido cancelada.',
+  ERROR_GENERICO: 'Ocurrió un error. Por favor intenta más tarde.',
+};
