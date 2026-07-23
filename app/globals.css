@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #FBF6EC;
+  color: #17130F;
+}
+
+.container-page {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn-ember {
+  background-color: #D9542A;
+  color: #FBF6EC;
+}
+.btn-ember:hover {
+  background-color: #BC3E11;
+}
+.btn-outline {
+  border: 1.5px solid #E8D4A8;
+  color: #F3E7CE;
+}
+.btn-outline:hover {
+  background-color: rgba(243, 231, 206, 0.08);
+}
+.btn-line {
+  border: 1.5px solid #17130F;
+  color: #17130F;
+}
+.btn-line:hover {
+  background-color: #17130F;
+  color: #FBF6EC;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.rule-gold {
+  height: 3px;
+  background: linear-gradient(90deg, #C9A45C, transparent 85%);
+}
