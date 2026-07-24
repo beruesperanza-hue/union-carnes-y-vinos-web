@@ -116,6 +116,9 @@ export default function Home() {
               <h2 className="font-display uppercase text-4xl text-brasa-900 leading-[0.9]">
                 Carnes a la parrilla
               </h2>
+              <Link href="/entrana-en-valencia" className="font-body text-sm text-brasa-900/60 underline underline-offset-4 hover:text-ember-600 inline-block mt-2">
+                Nuestro plato estrella: la entraña →
+              </Link>
             </div>
             <Link href="/carta" className="font-body font-bold text-brasa-900 underline underline-offset-4 hover:text-ember-600">
               Ver carta completa →

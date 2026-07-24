@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { NEGOCIO } from '@/lib/constants';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const rutas = ['', '/carta', '/vinos', '/reservar', '/historia', '/faq', '/en', '/en/carta'];
+  const rutas = ['', '/carta', '/vinos', '/reservar', '/historia', '/faq', '/entrana-en-valencia', '/en', '/en/carta'];
   return rutas.map((ruta) => ({
     url: `${NEGOCIO.sitio}${ruta}`,
     lastModified: new Date(),
