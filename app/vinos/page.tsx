@@ -38,6 +38,9 @@ export default function VinosPage() {
 
       <section className="container-page py-16">
         <h2 className="font-display uppercase text-3xl text-brasa-900 mb-1">🇦🇷 Argentina</h2>
+        <Link href="/vinos-argentinos-valencia" className="font-body text-sm text-brasa-900/50 underline underline-offset-4 hover:text-ember-600 inline-block mb-4">
+          Guía completa de nuestros vinos argentinos →
+        </Link>
         <div className="rule-gold w-24 mb-7" />
         <div className="grid md:grid-cols-3 gap-x-10 gap-y-8">
           {argentinos.map((sec) => (

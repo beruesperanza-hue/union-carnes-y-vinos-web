@@ -35,6 +35,16 @@ export default function CartaPage() {
         {CARTA_COMIDA.map((seccion) => (
           <div key={seccion.id} id={seccion.id}>
             <h2 className="font-display uppercase text-3xl text-brasa-900 mb-1">{seccion.titulo}</h2>
+            {seccion.id === 'empanadas' && (
+              <Link href="/empanadas-argentinas-valencia" className="font-body text-sm text-brasa-900/50 underline underline-offset-4 hover:text-ember-600 inline-block mb-4">
+                &ldquo;Las mejores de Valencia&rdquo; según Valencia Plaza →
+              </Link>
+            )}
+            {seccion.id === 'carnes' && (
+              <Link href="/entrana-en-valencia" className="font-body text-sm text-brasa-900/50 underline underline-offset-4 hover:text-ember-600 inline-block mb-4">
+                Todo sobre nuestra entraña →
+              </Link>
+            )}
             <div className="rule-gold w-24 mb-7" />
             <ul className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
               {seccion.platos.map((plato) => (
