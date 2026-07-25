@@ -128,17 +128,12 @@ export async function POST(request: NextRequest) {
     if (!body.nombre || !body.apellido || !body.telefono || !body.personas || !body.fecha || !body.hora) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
-    // A diferencia de La Esperanza, el createReservationAdmin de este repo pide email
-    // obligatorio (así es el schema acá) — se sintetiza un placeholder único para walk-ins
-    // sin mail, mismo patrón que ya usa el propio código de este repo en otros lados.
-    const email =
-      body.email?.trim() ||
-      `walkin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@sin-email.union`;
-
+    // createReservationAdmin ya sintetiza un placeholder para walk-ins sin mail y manda la
+    // confirmación solo si hay un email real — no hace falta duplicar esa lógica acá.
     const result = await createReservationAdmin({
       nombre: body.nombre,
       apellido: body.apellido,
-      email,
+      email: body.email,
       telefono: body.telefono,
       personas: body.personas,
       fecha: body.fecha,

@@ -188,23 +188,40 @@ export async function deleteReservation(reservationId: string) {
   }
 }
 
+interface CreateReservationAdminData {
+  nombre: string;
+  apellido: string;
+  /** Opcional: si no se carga, no se manda mail y se guarda un placeholder único. */
+  email?: string;
+  telefono: string;
+  personas: number;
+  fecha: string;
+  hora: string;
+  ubicacion?: string;
+  comentarios?: string;
+}
+
 /**
  * Alta desde el panel admin: sin las restricciones del formulario público
  * (turno pasado, cerrado o lleno) — para walk-ins, teléfono o forzar un
  * hueco. Igual respeta duplicados exactos (mismo email+fecha+hora) por la
  * constraint de la base.
  */
-export async function createReservationAdmin(data: CreateReservationData) {
+export async function createReservationAdmin(data: CreateReservationAdminData) {
   try {
     const fecha = fechaISOaDate(data.fecha);
     const ubicacion =
       data.ubicacion === UBICACIONES.VEREDA ? UBICACIONES.VEREDA : UBICACIONES.ADENTRO;
+    const tieneEmail = !!data.email && data.email.trim().length > 0;
+    const email = tieneEmail
+      ? data.email!.trim()
+      : `walkin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@sin-email.union`;
 
     const reservation = await prisma.reservation.create({
       data: {
         nombre: data.nombre,
         apellido: data.apellido,
-        email: data.email,
+        email,
         telefono: data.telefono,
         personas: data.personas,
         fecha,
@@ -214,6 +231,18 @@ export async function createReservationAdmin(data: CreateReservationData) {
         estado: ESTADOS_RESERVA.CONFIRMADA,
       },
     });
+
+    if (tieneEmail) {
+      await sendReservationConfirmation(
+        email,
+        data.nombre,
+        formatearFechaLarga(data.fecha),
+        data.hora,
+        data.personas,
+        data.telefono,
+        ubicacion
+      );
+    }
 
     revalidatePath('/admin');
     return { success: true, message: 'Reserva cargada', reservationId: reservation.id };
