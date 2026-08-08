@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
 import Wordmark from '@/components/Wordmark';
+import Postres from '@/components/Postres';
 import { NEGOCIO } from '@/lib/constants';
 import { CARTA_COMIDA } from '@/lib/menu';
 
@@ -167,6 +168,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* POSTRES */}
+      <Postres />
 
       {/* CTA FINAL */}
       <section className="container-page py-24 text-center">
