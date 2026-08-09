@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
 import Wordmark from '@/components/Wordmark';
+import Postres from '@/components/Postres';
 import { NEGOCIO } from '@/lib/constants';
 import { CARTA_COMIDA } from '@/lib/menu';
 
@@ -93,13 +94,13 @@ export default function Home() {
         <div className="order-1 md:order-2">
           <p className="eyebrow text-ember-600 mb-3">Nuestra historia</p>
           <h2 className="font-display uppercase text-4xl text-brasa-900 leading-[0.9] mb-5">
-            Cuatro amigos de Buenos Aires, un fuego en Ruzafa
+            Euge y Martín en el fuego de Ruzafa
           </h2>
           <p className="font-body text-brasa-900/80 mb-4 max-w-[52ch]">
-            Unión nació en agosto de 2019, cuando cuatro amigos de la infancia de Buenos Aires
-            decidieron traer a Valencia la parrillita de barrio con la que crecieron. Reimaginada
-            en 2024 bajo nueva gestión familiar, hoy combina técnica actual con el mismo fuego de
-            siempre.
+            Hoy Unión es nuestro local. Estamos aquí cada día para recibirte como en casa.
+            Queremos que disfrutes de carnes a la brasa, vinos que mariden perfecto, y la
+            comodidad de sentirte en un lugar donde importás. Ese es Unión: fuego, vino,
+            y la calidez de estar entre amigos.
           </p>
           <Link href="/historia" className="btn btn-line">
             Conocer la historia completa
@@ -167,6 +168,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* POSTRES */}
+      <Postres />
 
       {/* CTA FINAL */}
       <section className="container-page py-24 text-center">
