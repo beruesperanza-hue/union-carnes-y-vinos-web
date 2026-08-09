@@ -1,93 +1,83 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import WhatsAppBoton from '@/components/WhatsAppBoton';
-import { JsonLd, faqSchema } from '@/lib/schema';
 import { NEGOCIO } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Preguntas Frecuentes',
+  title: 'Preguntas Frecuentes | Unión Carnes y Vinos',
   description:
-    'Horarios, reservas de grupos, opciones sin gluten, mascotas y cómo llegar. Todo lo que necesitas saber antes de venir a Unión Carnes y Vinos.',
-  alternates: { canonical: '/faq' },
+    'Preguntas y respuestas sobre Unión, parrilla argentina en Valencia. Reservas, menú, horarios, ubicación y contacto.',
+  openGraph: {
+    title: 'Preguntas Frecuentes | Unión Carnes y Vinos',
+    description: 'Todo lo que necesitas saber sobre nuestro restaurante argentino en Ruzafa.',
+  },
 };
 
-const PREGUNTAS = [
+const faqs = [
   {
-    pregunta: '¿Hace falta reservar en Unión?',
-    respuesta:
-      'Lo recomendamos, especialmente viernes y sábado. Podés reservar online en TheFork o escribirnos por WhatsApp al ' +
-      NEGOCIO.telefonoDisplay +
-      '.',
+    pregunta: '¿Dónde está ubicado Unión Carnes y Vinos?',
+    respuesta: `Nos encontramos en Carrer de Puerto Rico, 38, en el barrio de Ruzafa, Valencia (46006).`,
   },
   {
-    pregunta: '¿Cuánto cuesta cenar en Unión?',
-    respuesta:
-      'El precio medio es de 20 € por persona, aunque varía según lo que pidas. Los cortes de carne van de 23 € a 27 € e incluyen papas fritas.',
+    pregunta: '¿Cuál es el horario de atención?',
+    respuesta: 'Abierto de jueves a domingo, de 19:30 a 23:30.',
   },
   {
-    pregunta: '¿Cuál es el plato más pedido?',
-    respuesta:
-      'La entraña vuelta y vuelta (300 g, 23 €) es nuestro plato estrella, junto con las empanadas de carne cortadas a cuchillo.',
+    pregunta: '¿Es necesario hacer reserva?',
+    respuesta: 'Recomendamos reserva, especialmente viernes y sábados.',
   },
   {
-    pregunta: '¿Tienen opciones vegetarianas?',
-    respuesta:
-      'Sí: empanada de hongos y queso azul, buñuelos de acelga, provoleta, ñoquis con burrata y varias ensaladas están marcados como vegetarianos en la carta.',
+    pregunta: '¿Qué tipo de carne sirven?',
+    respuesta: 'Carnes premium argentinas a la brasa: entraña, bife de chorizo, vacío, milanesas.',
   },
   {
-    pregunta: '¿Y opciones sin gluten?',
-    respuesta:
-      'Varios platos no llevan gluten, como la entraña, el vacío, el bife de chorizo o las mollejas. Consultá con el equipo en sala para el detalle completo de alérgenos.',
+    pregunta: '¿Cuál es el plato más popular?',
+    respuesta: 'La entraña vuelta y vuelta. 9.4/10 en TheFork.',
   },
   {
-    pregunta: '¿Qué días están abiertos?',
-    respuesta:
-      'Abrimos para cenas de jueves a domingo, de 19:30 a 23:30. Lunes, martes y miércoles permanecemos cerrados.',
+    pregunta: '¿Qué vinos ofrecen?',
+    respuesta: 'Malbec argentino y tintos españoles de Ribera y Rioja.',
   },
   {
-    pregunta: '¿Dónde queda Unión Carnes y Vinos?',
-    respuesta:
-      NEGOCIO.direccion.calle +
-      ', en el barrio de Ruzafa, Valencia. A dos minutos del metro Bailén (líneas L0 y L7).',
+    pregunta: '¿Puedo encargar postres especiales?',
+    respuesta: 'Sí, Chocotorta y Tiramisú. Consulta con 48 horas de anticipación.',
   },
   {
-    pregunta: '¿Puedo reservar para un grupo grande o una celebración?',
-    respuesta:
-      'Sí, escribinos por WhatsApp contándonos cuántos son y la fecha, y te confirmamos disponibilidad y opciones de menú de grupo.',
+    pregunta: '¿Hacen eventos privados?',
+    respuesta: 'Sí, aceptamos grupos y eventos privados. Contacta por WhatsApp.',
   },
   {
-    pregunta: '¿Qué vinos tienen?',
-    respuesta:
-      'Bodega argentina (Malbec de Mendoza y Salta, Pinot Noir y Chardonnay patagónicos) y española (Ribera del Duero, Rioja, Valencia), elegida para acompañar carnes a la parrilla.',
+    pregunta: '¿Cuál es el rango de precios?',
+    respuesta: 'Carnes: 23-27 €. Postres: 24-36 €. Ticket promedio: 40-50 € por persona.',
+  },
+  {
+    pregunta: '¿Cómo hago una reserva?',
+    respuesta: 'Online, WhatsApp o teléfono.',
   },
 ];
 
-export default function FaqPage() {
+export default function FAQ() {
   return (
     <>
       <Header />
-      <WhatsAppBoton />
-      <JsonLd data={faqSchema(PREGUNTAS)} />
 
-      <section className="bg-brasa-950 py-16">
+      <section className="bg-brasa-950 text-brasa-100 py-16">
         <div className="container-page">
-          <p className="eyebrow text-gold-400 mb-3">Antes de venir</p>
-          <h1 className="font-display uppercase text-5xl text-brasa-100 leading-[0.88]">
-            Preguntas frecuentes
-          </h1>
+          <h1 className="font-display text-5xl mb-4 leading-tight">Preguntas Frecuentes</h1>
+          <p className="text-brasa-300 max-w-2xl">Todo lo que necesitas saber sobre Unión.</p>
         </div>
       </section>
 
-      <section className="container-page py-16 max-w-[70ch]">
-        <dl className="divide-y divide-brasa-200">
-          {PREGUNTAS.map((p) => (
-            <div key={p.pregunta} className="py-6">
-              <dt className="font-display uppercase text-xl text-brasa-900 mb-2">{p.pregunta}</dt>
-              <dd className="font-body text-brasa-900/75">{p.respuesta}</dd>
+      <section className="container-page py-20">
+        <div className="max-w-3xl mx-auto space-y-8">
+          {faqs.map((faq, idx) => (
+            <div key={idx} className="border-b border-brasa-200 pb-8">
+              <h3 className="font-display text-xl text-brasa-900 mb-3">{faq.pregunta}</h3>
+              <p className="font-body text-brasa-700">{faq.respuesta}</p>
             </div>
           ))}
-        </dl>
+        </div>
       </section>
 
       <Footer />
