@@ -53,7 +53,7 @@ export default function Home() {
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
               <Image
                 src="/fotos/hero-entrana.jpg"
-                alt="Entraña a la parrilla cortada, servida con pimientos de Padrón"
+                alt="Entraña argentina a la parrilla cocinada a la brasa con pimientos de Padrón - Parrilla en Valencia"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -85,7 +85,7 @@ export default function Home() {
         <div className="relative aspect-[4/5] rounded-2xl overflow-hidden order-2 md:order-1">
           <Image
             src="/fotos/empanada-vino.jpg"
-            alt="Empanada casera de Unión Carnes y Vinos junto a una copa de Malbec"
+            alt="Empanada argentina casera de Unión Carnes y Vinos acompañada de Malbec argentino - Bodegón en Valencia"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover"

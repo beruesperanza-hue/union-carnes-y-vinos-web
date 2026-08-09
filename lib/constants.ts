@@ -7,7 +7,7 @@ export const NEGOCIO = {
   alternateName: 'Bar Unión',
   eslogan: 'Parrilla argentina en Ruzafa · Desde 2019',
   descripcion:
-    'Parrilla argentina en el corazón de Ruzafa, Valencia. Carnes premium, empanadas cortadas a cuchillo y vinos argentinos y españoles. Proyecto familiar desde 2019.',
+    'Restaurante parrilla argentina en Ruzafa, Valencia. Entraña, carnes premium a la brasa, empanadas caseras y vinos Malbec. Bodegón argentino desde 2019. Reservas online.',
   fundacion: '2019-08',
 
   direccion: {

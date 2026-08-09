@@ -4,6 +4,7 @@ const postres = [
   {
     id: 1,
     nombre: 'Chocotorta',
+    nombreAlt: 'Chocotorta argentina casera - Postre para cumpleaños y celebraciones en Valencia',
     porciones: [
       { cantidad: 8, precio: 24 },
       { cantidad: 14, precio: 32 }
@@ -13,6 +14,7 @@ const postres = [
   {
     id: 2,
     nombre: 'Tiramisú',
+    nombreAlt: 'Tiramisú artesanal italiano - Postre especial para encargar en Valencia',
     porciones: [
       { cantidad: 8, precio: 30 },
       { cantidad: 14, precio: 36 }
@@ -43,7 +45,7 @@ export default function Postres() {
               <div className="relative w-full h-96 md:h-80 overflow-hidden rounded-lg shadow-lg mb-6 transition-transform duration-300 group-hover:scale-105">
                 <Image
                   src={postre.imagen}
-                  alt={postre.nombre}
+                  alt={postre.nombreAlt}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
