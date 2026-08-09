@@ -41,6 +41,23 @@ export function restaurantSchema() {
     hasMenu: `${NEGOCIO.sitio}/carta`,
     foundingDate: NEGOCIO.fundacion,
     sameAs: [NEGOCIO.instagramUrl, NEGOCIO.theforkUrl, NEGOCIO.tripadvisorUrl],
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '9.4',
+      ratingCount: '1200',
+      bestRating: '10',
+      worstRating: '1',
+    },
+    priceRange: '€€',
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Carta de Unión Carnes y Vinos',
+      itemListElement: [
+        { '@type': 'Offer', name: 'Carnes a la brasa', price: '€23-€27' },
+        { '@type': 'Offer', name: 'Postres especiales', price: '€24-€36' },
+        { '@type': 'Offer', name: 'Vinos argentinos', price: 'Variado' },
+      ],
+    },
   };
 }
 
@@ -78,6 +95,30 @@ export function faqSchema(preguntas: { pregunta: string; respuesta: string }[]) 
       name: p.pregunta,
       acceptedAnswer: { '@type': 'Answer', text: p.respuesta },
     })),
+  };
+}
+
+export function articleSchema(title: string, description: string, slug: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description: description,
+    url: `${NEGOCIO.sitio}/blog/${slug}`,
+    datePublished: new Date().toISOString().split('T')[0],
+    author: {
+      '@type': 'Organization',
+      name: NEGOCIO.nombre,
+      url: NEGOCIO.sitio,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: NEGOCIO.nombre,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${NEGOCIO.sitio}/logo.png`,
+      },
+    },
   };
 }
 

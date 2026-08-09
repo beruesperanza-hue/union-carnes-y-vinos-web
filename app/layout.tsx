@@ -28,10 +28,14 @@ export const metadata: Metadata = {
   keywords: [
     'restaurante argentino valencia',
     'parrilla argentina valencia',
-    'restaurante argentino ruzafa',
-    'entraña valencia',
-    'empanadas argentinas valencia',
-    'vinos argentinos valencia',
+    'bodegón argentino ruzafa',
+    'entraña vuelta y vuelta',
+    'carnes a la brasa valencia',
+    'empanadas caseras argentina',
+    'vinos malbec valencia',
+    'mejores restaurantes ruzafa',
+    'parrilla buenos aires valencia',
+    'comida argentina españa',
   ],
   authors: [{ name: NEGOCIO.nombre }],
   alternates: {
