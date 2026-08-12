@@ -46,11 +46,11 @@ export default function HomeEN() {
                 View the menu
               </Link>
             </div>
-            <div className="flex items-center gap-5 mt-9 text-brasa-400 font-body text-sm">
+            <div className="flex items-center gap-5 mt-9 text-brasa-300 font-body text-sm">
               <span className="flex items-center gap-1.5">
                 <strong className="text-gold-400 font-display text-lg">9.4</strong>/10 on TheFork
               </span>
-              <span className="w-1 h-1 rounded-full bg-brasa-700" />
+              <span className="w-1 h-1 rounded-full bg-brasa-300" />
               <span>1,986 reviews</span>
             </div>
           </div>

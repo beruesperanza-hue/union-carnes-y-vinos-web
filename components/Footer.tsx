@@ -77,7 +77,7 @@ export default function Footer({ lang = 'es' }: { lang?: Lang }) {
       <div className="container-page py-14 grid md:grid-cols-3 gap-10">
         <div>
           <Wordmark className="text-[12px] mb-4" />
-          <p className="font-body text-sm text-brasa-400 max-w-[26ch]">{t.tagline}</p>
+          <p className="font-body text-sm text-brasa-300 max-w-[26ch]">{t.tagline}</p>
         </div>
 
         <div>

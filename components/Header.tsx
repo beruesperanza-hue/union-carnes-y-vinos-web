@@ -13,11 +13,11 @@ const NAV_ES = [
 ];
 
 const IDIOMAS = [
-  { code: 'es', label: 'ES', prefix: '' },
-  { code: 'en', label: 'EN', prefix: '/en' },
-  { code: 'it', label: 'IT', prefix: '/it' },
-  { code: 'fr', label: 'FR', prefix: '/fr' },
-  { code: 'de', label: 'DE', prefix: '/de' },
+  { code: 'es', label: 'ES', flag: '🇪🇸', prefix: '' },
+  { code: 'en', label: 'EN', flag: '🇬🇧', prefix: '/en' },
+  { code: 'it', label: 'IT', flag: '🇮🇹', prefix: '/it' },
+  { code: 'fr', label: 'FR', flag: '🇫🇷', prefix: '/fr' },
+  { code: 'de', label: 'DE', flag: '🇩🇪', prefix: '/de' },
 ];
 
 const RESERVAR_LABEL: Record<string, string> = {
@@ -52,10 +52,11 @@ export default function Header() {
                 <Link
                   key={idioma.code}
                   href={(idioma.prefix || '') + pathSinPrefijo}
-                  className={`eyebrow transition-colors ${
-                    idioma.code === idiomaActual.code ? 'text-gold-400' : 'text-brasa-400 hover:text-gold-400'
+                  className={`eyebrow flex items-center gap-1.5 transition-colors ${
+                    idioma.code === idiomaActual.code ? 'text-gold-400' : 'text-brasa-300 hover:text-gold-400'
                   }`}
                 >
+                  <span className="text-base leading-none not-italic">{idioma.flag}</span>
                   {idioma.label}
                 </Link>
               ))}
@@ -77,8 +78,9 @@ export default function Header() {
             ))}
             <Link
               href={esIngles ? '/' : '/en'}
-              className="eyebrow text-brasa-400 hover:text-gold-400 transition-colors"
+              className="eyebrow flex items-center gap-1.5 text-brasa-300 hover:text-gold-400 transition-colors"
             >
+              <span className="text-base leading-none not-italic">{esIngles ? '🇪🇸' : '🇬🇧'}</span>
               {esIngles ? 'ES' : 'EN'}
             </Link>
             <Link href="/reservar" className="btn btn-ember !py-2.5 !px-5 !text-[13px]">
@@ -114,10 +116,11 @@ export default function Header() {
                       key={idioma.code}
                       href={(idioma.prefix || '') + pathSinPrefijo}
                       onClick={() => setAbierto(false)}
-                      className={`font-body text-base ${
+                      className={`flex items-center gap-1.5 font-body text-base ${
                         idioma.code === idiomaActual.code ? 'text-gold-400' : 'text-brasa-300'
                       }`}
                     >
+                      <span className="text-lg leading-none">{idioma.flag}</span>
                       {idioma.label}
                     </Link>
                   ))}
@@ -145,8 +148,9 @@ export default function Header() {
                 <Link
                   href={esIngles ? '/' : '/en'}
                   onClick={() => setAbierto(false)}
-                  className="py-2.5 text-brasa-400 font-body text-base"
+                  className="flex items-center gap-2 py-2.5 text-brasa-300 font-body text-base"
                 >
+                  <span className="text-lg leading-none">{esIngles ? '🇪🇸' : '🇬🇧'}</span>
                   {esIngles ? 'Ver en Español' : 'View in English'}
                 </Link>
                 <Link

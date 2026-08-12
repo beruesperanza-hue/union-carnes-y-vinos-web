@@ -46,7 +46,7 @@ export default function AdminLogin() {
             <span className="text-4xl">🔐</span>
           </div>
           <h1 className="font-display uppercase text-3xl text-brasa-100">Unión</h1>
-          <p className="text-brasa-400 font-body">Panel de administración</p>
+          <p className="text-brasa-300 font-body">Panel de administración</p>
         </div>
 
         {error && (
