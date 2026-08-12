@@ -12,11 +12,31 @@ const NAV_ES = [
   { href: '/faq', label: 'Preguntas' },
 ];
 
+const IDIOMAS = [
+  { code: 'es', label: 'ES', prefix: '' },
+  { code: 'en', label: 'EN', prefix: '/en' },
+  { code: 'it', label: 'IT', prefix: '/it' },
+  { code: 'fr', label: 'FR', prefix: '/fr' },
+  { code: 'de', label: 'DE', prefix: '/de' },
+];
+
+const RESERVAR_LABEL: Record<string, string> = {
+  es: 'Reservar',
+  en: 'Book a table',
+  it: 'Prenota',
+  fr: 'Réserver',
+  de: 'Reservieren',
+};
+
 export default function Header() {
   const [abierto, setAbierto] = useState(false);
-  const pathname = usePathname();
-  const esIngles = pathname?.startsWith('/en');
-  const base = esIngles ? '/en' : '';
+  const pathname = usePathname() || '/';
+
+  const idiomaActual = IDIOMAS.find((i) => i.prefix && pathname.startsWith(i.prefix)) ?? IDIOMAS[0];
+  const base = idiomaActual.prefix;
+  const pathSinPrefijo = base ? pathname.slice(base.length) || '/' : pathname;
+  const esCarta = pathSinPrefijo === '/carta';
+  const esIngles = idiomaActual.code === 'en';
 
   return (
     <header className="sticky top-0 z-50 bg-brasa-950/95 backdrop-blur border-b border-brasa-900">
@@ -25,26 +45,47 @@ export default function Header() {
           <Wordmark className="text-[13px] sm:text-[15px]" />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7">
-          {NAV_ES.map((item) => (
-            <Link
-              key={item.href}
-              href={base + item.href}
-              className="eyebrow text-brasa-200 hover:text-ember-400 transition-colors"
-            >
-              {item.label}
+        {esCarta ? (
+          <nav className="hidden md:flex items-center gap-5">
+            <div className="flex items-center gap-3">
+              {IDIOMAS.map((idioma) => (
+                <Link
+                  key={idioma.code}
+                  href={(idioma.prefix || '') + pathSinPrefijo}
+                  className={`eyebrow transition-colors ${
+                    idioma.code === idiomaActual.code ? 'text-gold-400' : 'text-brasa-400 hover:text-gold-400'
+                  }`}
+                >
+                  {idioma.label}
+                </Link>
+              ))}
+            </div>
+            <Link href="/reservar" className="btn btn-ember !py-2.5 !px-5 !text-[13px]">
+              {RESERVAR_LABEL[idiomaActual.code]}
             </Link>
-          ))}
-          <Link
-            href={esIngles ? '/' : '/en'}
-            className="eyebrow text-brasa-400 hover:text-gold-400 transition-colors"
-          >
-            {esIngles ? 'ES' : 'EN'}
-          </Link>
-          <Link href="/reservar" className="btn btn-ember !py-2.5 !px-5 !text-[13px]">
-            {esIngles ? 'Book a table' : 'Reservar'}
-          </Link>
-        </nav>
+          </nav>
+        ) : (
+          <nav className="hidden md:flex items-center gap-7">
+            {NAV_ES.map((item) => (
+              <Link
+                key={item.href}
+                href={base + item.href}
+                className="eyebrow text-brasa-200 hover:text-ember-400 transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Link
+              href={esIngles ? '/' : '/en'}
+              className="eyebrow text-brasa-400 hover:text-gold-400 transition-colors"
+            >
+              {esIngles ? 'ES' : 'EN'}
+            </Link>
+            <Link href="/reservar" className="btn btn-ember !py-2.5 !px-5 !text-[13px]">
+              {esIngles ? 'Book a table' : 'Reservar'}
+            </Link>
+          </nav>
+        )}
 
         <button
           className="md:hidden text-brasa-100 p-2"
@@ -65,30 +106,58 @@ export default function Header() {
       {abierto && (
         <div className="md:hidden border-t border-brasa-900 bg-brasa-950">
           <div className="container-page py-4 flex flex-col gap-1">
-            {NAV_ES.map((item) => (
-              <Link
-                key={item.href}
-                href={base + item.href}
-                onClick={() => setAbierto(false)}
-                className="py-2.5 text-brasa-100 font-body text-base border-b border-brasa-900/70"
-              >
-                {item.label}
-              </Link>
-            ))}
-            <Link
-              href={esIngles ? '/' : '/en'}
-              onClick={() => setAbierto(false)}
-              className="py-2.5 text-brasa-400 font-body text-base"
-            >
-              {esIngles ? 'Ver en Español' : 'View in English'}
-            </Link>
-            <Link
-              href="/reservar"
-              onClick={() => setAbierto(false)}
-              className="btn btn-ember mt-3 w-full"
-            >
-              {esIngles ? 'Book a table' : 'Reservar mesa'}
-            </Link>
+            {esCarta ? (
+              <>
+                <div className="flex items-center gap-4 py-2.5">
+                  {IDIOMAS.map((idioma) => (
+                    <Link
+                      key={idioma.code}
+                      href={(idioma.prefix || '') + pathSinPrefijo}
+                      onClick={() => setAbierto(false)}
+                      className={`font-body text-base ${
+                        idioma.code === idiomaActual.code ? 'text-gold-400' : 'text-brasa-300'
+                      }`}
+                    >
+                      {idioma.label}
+                    </Link>
+                  ))}
+                </div>
+                <Link
+                  href="/reservar"
+                  onClick={() => setAbierto(false)}
+                  className="btn btn-ember mt-3 w-full"
+                >
+                  {RESERVAR_LABEL[idiomaActual.code]}
+                </Link>
+              </>
+            ) : (
+              <>
+                {NAV_ES.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={base + item.href}
+                    onClick={() => setAbierto(false)}
+                    className="py-2.5 text-brasa-100 font-body text-base border-b border-brasa-900/70"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Link
+                  href={esIngles ? '/' : '/en'}
+                  onClick={() => setAbierto(false)}
+                  className="py-2.5 text-brasa-400 font-body text-base"
+                >
+                  {esIngles ? 'Ver en Español' : 'View in English'}
+                </Link>
+                <Link
+                  href="/reservar"
+                  onClick={() => setAbierto(false)}
+                  className="btn btn-ember mt-3 w-full"
+                >
+                  {esIngles ? 'Book a table' : 'Reservar mesa'}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

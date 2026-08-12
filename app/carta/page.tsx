@@ -11,7 +11,16 @@ export const metadata: Metadata = {
   title: 'Carta — Empanadas, Parrilla y Postres Argentinos',
   description:
     'Entraña, bife de chorizo, empanadas cortadas a cuchillo y postres caseros. Carta completa con precios de nuestra parrilla argentina en Ruzafa, Valencia.',
-  alternates: { canonical: '/carta' },
+  alternates: {
+    canonical: '/carta',
+    languages: {
+      'es-ES': '/carta',
+      'en-US': '/en/carta',
+      'it-IT': '/it/carta',
+      'fr-FR': '/fr/carta',
+      'de-DE': '/de/carta',
+    },
+  },
 };
 
 export default function CartaPage() {

@@ -48,7 +48,6 @@ export function restaurantSchema() {
       bestRating: '10',
       worstRating: '1',
     },
-    priceRange: '€€',
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'Carta de Unión Carnes y Vinos',

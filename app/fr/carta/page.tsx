@@ -3,15 +3,15 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
-import { CARTA_COMIDA, VINOS, ALERGENOS_EN } from '@/lib/menu';
+import { CARTA_COMIDA, VINOS, ALERGENOS_FR } from '@/lib/menu';
 import { NEGOCIO } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Menu & Prices — Argentine Grill',
+  title: 'Carte & Prix — Grill Argentin',
   description:
-    'Skirt steak, bife de chorizo, homemade empanadas and dulce de leche desserts. Full menu of our Ruzafa steakhouse, with prices.',
+    'Entraña, bife de chorizo, empanadas maison et desserts au dulce de leche. La carte complète de notre grill argentin à Ruzafa, Valence, avec les prix.',
   alternates: {
-    canonical: '/en/carta',
+    canonical: '/fr/carta',
     languages: {
       'es-ES': '/carta',
       'en-US': '/en/carta',
@@ -22,18 +22,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function CartaEN() {
+export default function CartaFR() {
   return (
     <>
       <Header />
-      <WhatsAppBoton lang="en" />
+      <WhatsAppBoton lang="fr" />
 
       <section className="bg-brasa-950 py-16">
         <div className="container-page">
-          <p className="eyebrow text-gold-400 mb-3">The menu</p>
+          <p className="eyebrow text-gold-400 mb-3">La carte</p>
           <h1 className="font-display uppercase text-5xl text-brasa-100 leading-[0.88]">
-            Empanadas, grill
-            <br />& something sweet
+            Empanadas, grillades
+            <br />et une touche sucrée
           </h1>
         </div>
       </section>
@@ -41,19 +41,19 @@ export default function CartaEN() {
       <section className="container-page py-16 space-y-16">
         {CARTA_COMIDA.map((seccion) => (
           <div key={seccion.id}>
-            <h2 className="font-display uppercase text-3xl text-brasa-900 mb-1">{seccion.tituloEn}</h2>
+            <h2 className="font-display uppercase text-3xl text-brasa-900 mb-1">{seccion.tituloFr}</h2>
             <div className="rule-gold w-24 mb-7" />
             <ul className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
               {seccion.platos.map((plato) => (
                 <li key={plato.nombre} className="flex justify-between gap-4 border-b border-dashed border-brasa-200 pb-3">
                   <div>
-                    <p className="font-body font-semibold text-brasa-900">{plato.nombreEn ?? plato.nombre}</p>
-                    {plato.descripcionEn && (
-                      <p className="font-body text-sm text-brasa-900/55 mt-0.5">{plato.descripcionEn}</p>
+                    <p className="font-body font-semibold text-brasa-900">{plato.nombreFr ?? plato.nombre}</p>
+                    {plato.descripcionFr && (
+                      <p className="font-body text-sm text-brasa-900/55 mt-0.5">{plato.descripcionFr}</p>
                     )}
                     {plato.alergenos && plato.alergenos.length > 0 && (
                       <p className="font-body text-[11px] text-brasa-900/40 mt-1 uppercase tracking-wide">
-                        {plato.alergenos.map((a) => ALERGENOS_EN[a]).join(' · ')}
+                        {plato.alergenos.map((a) => ALERGENOS_FR[a]).join(' · ')}
                       </p>
                     )}
                   </div>
@@ -67,13 +67,13 @@ export default function CartaEN() {
 
       <section className="bg-malbec-700 py-16 text-brasa-100">
         <div className="container-page">
-          <p className="eyebrow text-gold-400 mb-3">Wine list</p>
-          <h2 className="font-display uppercase text-3xl mb-8">Argentine & Spanish wines</h2>
+          <p className="eyebrow text-gold-400 mb-3">Cave à vins</p>
+          <h2 className="font-display uppercase text-3xl mb-8">Vins argentins et espagnols</h2>
           <div className="grid md:grid-cols-2 gap-x-10 gap-y-10">
             {VINOS.map((sec) => (
               <div key={sec.id}>
                 <h3 className="eyebrow text-brasa-300 mb-3">
-                  {sec.tituloEn} <span className="opacity-50">· {sec.origen === 'Argentina' ? 'Argentina' : 'Spain'}</span>
+                  {sec.tituloFr} <span className="opacity-50">· {sec.origen === 'Argentina' ? 'Argentine' : 'Espagne'}</span>
                 </h3>
                 <ul className="space-y-2">
                   {sec.vinos.map((v) => (
@@ -91,14 +91,14 @@ export default function CartaEN() {
 
       <section className="container-page py-16 text-center">
         <p className="font-body text-brasa-900/60 text-sm max-w-[50ch] mx-auto mb-6">
-          Average {NEGOCIO.precioMedio} per person. Full allergen list available in the restaurant.
+          Prix moyen de {NEGOCIO.precioMedio} par personne. Liste complète des allergènes disponible sur demande en salle.
         </p>
         <Link href="/reservar" className="btn btn-ember">
-          Book a table
+          Réserver une table
         </Link>
       </section>
 
-      <Footer lang="en" />
+      <Footer lang="fr" />
     </>
   );
 }

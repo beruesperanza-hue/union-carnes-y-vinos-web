@@ -23,7 +23,7 @@ export default function HomeEN() {
   return (
     <>
       <Header />
-      <WhatsAppBoton en />
+      <WhatsAppBoton lang="en" />
 
       <section className="relative bg-brasa-950 overflow-hidden">
         <div className="container-page grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center py-14 lg:py-20">
@@ -159,7 +159,7 @@ export default function HomeEN() {
         </div>
       </section>
 
-      <Footer en />
+      <Footer lang="en" />
     </>
   );
 }
