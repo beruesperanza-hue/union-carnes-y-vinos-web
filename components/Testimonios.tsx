@@ -1,5 +1,3 @@
-import { NEGOCIO } from '@/lib/constants';
-
 // Opiniones reales de clientes verificados en TheFork (solo reservas/pagos
 // reales pueden dejar reseña ahí). Curadas a mano — texto tal cual, apenas
 // prolijizado en puntuación/mayúsculas para que se lea bien en tarjeta.
@@ -60,24 +58,14 @@ export default function Testimonios() {
   return (
     <section className="bg-brasa-50 py-20">
       <div className="container-page">
-        <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
-          <div>
-            <p className="eyebrow text-ember-600 mb-3">Lo dicen nuestros clientes</p>
-            <h2 className="font-display uppercase text-4xl text-brasa-900 leading-[0.9]">
-              9,4/10 en TheFork
-            </h2>
-            <p className="font-body text-sm text-brasa-900/50 mt-2">
-              Basado en casi 2.000 opiniones verificadas — solo puntúa quien reservó o pagó con TheFork.
-            </p>
-          </div>
-          <a
-            href={`${NEGOCIO.theforkUrl}/opiniones`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-body font-bold text-brasa-900 underline underline-offset-4 hover:text-ember-600 whitespace-nowrap"
-          >
-            Ver todas las opiniones →
-          </a>
+        <div className="mb-10">
+          <p className="eyebrow text-ember-600 mb-3">Lo dicen nuestros clientes</p>
+          <h2 className="font-display uppercase text-4xl text-brasa-900 leading-[0.9]">
+            9,4/10 en TheFork
+          </h2>
+          <p className="font-body text-sm text-brasa-900/50 mt-2">
+            Basado en casi 2.000 opiniones verificadas — solo puntúa quien reservó o pagó con TheFork.
+          </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
