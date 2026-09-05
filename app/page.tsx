@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
 import Wordmark from '@/components/Wordmark';
 import Postres from '@/components/Postres';
+import Testimonios from '@/components/Testimonios';
 import { NEGOCIO } from '@/lib/constants';
 import { CARTA_COMIDA } from '@/lib/menu';
 
@@ -171,6 +172,9 @@ export default function Home() {
 
       {/* POSTRES */}
       <Postres />
+
+      {/* TESTIMONIOS */}
+      <Testimonios />
 
       {/* CTA FINAL */}
       <section className="container-page py-24 text-center">
