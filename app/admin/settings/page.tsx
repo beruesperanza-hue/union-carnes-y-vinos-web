@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { DIAS_SEMANA_ORDEN } from '@/lib/constants';
 
@@ -147,8 +148,9 @@ export default function SettingsPage() {
           <h2 className="font-display uppercase text-2xl text-brasa-900 mb-2">Horarios y capacidad</h2>
           <p className="font-body text-sm text-brasa-900/50 mb-6">
             Abrimos jueves a domingo. Cargá la capacidad de adentro y de terraza por turno.
-            &ldquo;Cerrar&rdquo; afecta ese horario todas las semanas (no solo hoy) — para bloquear
-            un día puntual, eliminá y volvé a crear el horario después.
+            &ldquo;Cerrar&rdquo; afecta ese horario <strong>todas las semanas</strong>. Para cerrar un
+            día puntual, un turno de una fecha o la terraza por lluvia, usá el{' '}
+            <Link href="/admin/calendario" className="underline font-semibold">Calendario</Link>.
           </p>
 
           <div className="bg-brasa-50 border border-brasa-200 rounded-xl p-5 mb-8">

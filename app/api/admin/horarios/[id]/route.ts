@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { exigirAdminApi } from '@/lib/admin-guard';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const sinSesion = await exigirAdminApi();
+  if (sinSesion) return sinSesion;
+
   try {
     const { id } = await params;
     const data = await request.json();
@@ -21,6 +25,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const sinSesion = await exigirAdminApi();
+  if (sinSesion) return sinSesion;
+
   try {
     const { id } = await params;
     await prisma.schedule.delete({ where: { id } });

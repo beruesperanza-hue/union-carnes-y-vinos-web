@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { diaSemanaDe, esTurnoPasado, fechaISOaDate } from '@/lib/fechas';
+import { cierresDeFecha, diaCerradoCompleto, estadoCierreTurno } from '@/lib/cierres';
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,8 +34,25 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Cierres puntuales de esta fecha (feriado, evento privado, lluvia...).
+    // El motivo es una nota interna: no se expone al público.
+    const cierres = await cierresDeFecha(fechaStr);
+    if (diaCerradoCompleto(cierres)) {
+      return NextResponse.json({
+        fecha: fechaStr,
+        dia: diaNombre,
+        slots: [],
+        cerradoDia: true,
+        mensaje: 'Ese día estamos cerrados. Elegí otra fecha.',
+      });
+    }
+
     const slots = await Promise.all(
       horarios.map(async (horario) => {
+        const cierre = estadoCierreTurno(cierres, horario.hora);
+        const salonCerrado = horario.cerradoManual || cierre.adentro;
+        const veredaCerrada = horario.cerradoVereda || cierre.vereda;
+
         const [salonCount, veredaCount] = await Promise.all([
           prisma.reservation.aggregate({
             where: {
@@ -60,24 +78,24 @@ export async function GET(request: NextRequest) {
 
         const salonReservadas = salonCount._sum.personas || 0;
         const salonLibres = horario.capacidad - salonReservadas;
-        const salonDisponible = !pasado && !horario.cerradoManual && salonLibres >= personas;
+        const salonDisponible = !pasado && !salonCerrado && salonLibres >= personas;
 
         const veredaExiste = horario.capacidadVereda > 0;
         const veredaReservadas = veredaCount._sum.personas || 0;
         const veredaLibres = horario.capacidadVereda - veredaReservadas;
         const veredaDisponible =
-          veredaExiste && !pasado && !horario.cerradoVereda && veredaLibres >= personas;
+          veredaExiste && !pasado && !veredaCerrada && veredaLibres >= personas;
 
         return {
           hora: horario.hora,
           pasado,
           disponible: salonDisponible || veredaDisponible,
-          salon: { disponible: salonDisponible, libres: salonLibres, cerrado: horario.cerradoManual },
+          salon: { disponible: salonDisponible, libres: salonLibres, cerrado: salonCerrado },
           vereda: {
             existe: veredaExiste,
             disponible: veredaDisponible,
             libres: veredaLibres,
-            cerrado: horario.cerradoVereda,
+            cerrado: veredaCerrada,
           },
         };
       })

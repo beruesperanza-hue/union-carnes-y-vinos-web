@@ -87,8 +87,11 @@ export default function AdminDashboard() {
 
             <div className="bg-white rounded-xl border border-brasa-200 p-8">
               <h2 className="font-display uppercase text-2xl text-brasa-900 mb-5">Acciones rápidas</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Link href="/admin/reservas" className="btn btn-ember text-center">
+              <div className="grid sm:grid-cols-3 gap-4">
+                <Link href="/admin/calendario" className="btn btn-ember text-center">
+                  Calendario y cierres
+                </Link>
+                <Link href="/admin/reservas" className="btn btn-line text-center">
                   Ver todas las reservas
                 </Link>
                 <Link href="/admin/settings" className="btn btn-line text-center">

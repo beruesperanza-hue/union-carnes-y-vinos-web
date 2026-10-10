@@ -101,6 +101,7 @@ export const MENSAJES = {
   HORARIO_LLENO: 'Lo siento, este horario está completamente lleno.',
   TURNO_PASADO: 'Ese horario ya pasó. Elegí uno más tarde o para otro día.',
   TURNO_CERRADO: 'Ese turno no está disponible por el momento.',
+  DIA_CERRADO: 'Ese día estamos cerrados. Elegí otra fecha.',
   RESERVA_NO_ENCONTRADA: 'La reserva no fue encontrada.',
   CANCELA_EXITOSA: 'Tu reserva ha sido cancelada.',
   ERROR_GENERICO: 'Ocurrió un error. Por favor intenta más tarde.',

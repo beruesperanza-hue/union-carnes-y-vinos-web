@@ -43,6 +43,25 @@ model Schedule {
   @@index([dia])
 }
 
+// Cierres puntuales por fecha (feriados, eventos privados, lluvia en la terraza).
+// A diferencia de Schedule.cerradoManual/cerradoVereda (que afectan ese horario
+// TODAS las semanas), un Cierre vale solo para su fecha.
+//   hora   = ""  → todo el día · "20:30" → solo ese turno
+//   sector = "todos" | "adentro" | "vereda"
+// `hora` es "" y no NULL para que el unique funcione (en Postgres los NULL
+// nunca chocan entre sí).
+model Cierre {
+  id        String   @id @default(cuid())
+  fecha     DateTime
+  hora      String   @default("")
+  sector    String   @default("todos")
+  motivo    String?
+  createdAt DateTime @default(now())
+
+  @@unique([fecha, hora, sector])
+  @@index([fecha])
+}
+
 model Settings {
   id                    String   @id @default(cuid())
   nombreRestaurante     String   @default("Unión Carnes y Vinos")

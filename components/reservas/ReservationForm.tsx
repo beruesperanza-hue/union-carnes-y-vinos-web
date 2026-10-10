@@ -34,11 +34,13 @@ export default function ReservationForm() {
   const [availableSlots, setAvailableSlots] = useState<AvailableSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [sinServicio, setSinServicio] = useState(false);
+  const [cerradoDia, setCerradoDia] = useState(false);
 
   const cargarDisponibilidad = async (fecha: string, personas: string) => {
     if (!fecha) return;
     setLoadingSlots(true);
     setSinServicio(false);
+    setCerradoDia(false);
     try {
       const response = await fetch(`/api/disponibilidad?fecha=${fecha}&personas=${personas}`);
       const data = await response.json();
@@ -49,6 +51,7 @@ export default function ReservationForm() {
       } else {
         setAvailableSlots(data.slots || []);
         setSinServicio((data.slots || []).length === 0);
+        setCerradoDia(!!data.cerradoDia);
       }
     } catch (err) {
       setError('Error al conectar con el servidor');
@@ -188,7 +191,9 @@ export default function ReservationForm() {
 
             {sinServicio && !loadingSlots && (
               <div className="p-4 bg-brasa-100 rounded-lg text-center font-body text-brasa-900/70 text-sm">
-                Ese día no abrimos. Elegí jueves, viernes, sábado o domingo.
+                {cerradoDia
+                  ? 'Ese día estamos cerrados. Elegí otra fecha.'
+                  : 'Ese día no abrimos. Elegí jueves, viernes, sábado o domingo.'}
               </div>
             )}
 

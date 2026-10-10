@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { fechaISOaDate, hoyEnES, sumarDias } from '@/lib/fechas';
+import { exigirAdminApi } from '@/lib/admin-guard';
 
 export async function GET() {
+  const sinSesion = await exigirAdminApi();
+  if (sinSesion) return sinSesion;
+
   try {
     const hoyISO = hoyEnES();
     const mananaISO = sumarDias(hoyISO, 1);

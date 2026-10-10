@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { sendReservationConfirmation, sendReservationCancellation } from '@/lib/email';
 import { MENSAJES, ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { esTurnoPasado, fechaISOaDate, formatearFechaLarga } from '@/lib/fechas';
+import { cierresDeFecha, diaCerradoCompleto, estadoCierreTurno } from '@/lib/cierres';
 import { revalidatePath } from 'next/cache';
 
 interface CreateReservationData {
@@ -46,6 +47,17 @@ export async function createReservation(data: CreateReservationData) {
       return { success: false, error: MENSAJES.TURNO_CERRADO };
     }
     if (ubicacion === UBICACIONES.ADENTRO && horario.cerradoManual) {
+      return { success: false, error: MENSAJES.TURNO_CERRADO };
+    }
+
+    // Cierres puntuales por fecha (se revalidan acá porque el formulario puede
+    // haber quedado abierto desde antes de que se cerrara el día).
+    const cierres = await cierresDeFecha(data.fecha);
+    if (diaCerradoCompleto(cierres)) {
+      return { success: false, error: MENSAJES.DIA_CERRADO };
+    }
+    const cierreTurno = estadoCierreTurno(cierres, data.hora);
+    if (ubicacion === UBICACIONES.VEREDA ? cierreTurno.vereda : cierreTurno.adentro) {
       return { success: false, error: MENSAJES.TURNO_CERRADO };
     }
 

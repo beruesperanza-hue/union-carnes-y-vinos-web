@@ -29,9 +29,21 @@ export default function AdminReservasPage() {
   const [loading, setLoading] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
 
+  // Si llega ?fecha=YYYY-MM-DD (desde el calendario) arranca filtrando ese día.
+  // Se lee de window.location para no exigir un <Suspense> con useSearchParams.
+  const [listo, setListo] = useState(false);
   useEffect(() => {
-    loadReservas();
-  }, [filtro, fechaFiltro]);
+    const f = new URLSearchParams(window.location.search).get('fecha');
+    if (f && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
+      setFiltro('fecha');
+      setFechaFiltro(f);
+    }
+    setListo(true);
+  }, []);
+
+  useEffect(() => {
+    if (listo) loadReservas();
+  }, [listo, filtro, fechaFiltro]);
 
   const loadReservas = async () => {
     setLoading(true);

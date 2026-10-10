@@ -1,6 +1,6 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminLogin from '@/components/admin/AdminLogin';
+import { adminAutenticado } from '@/lib/admin-guard';
 
 export const metadata = {
   title: 'Admin - Unión Carnes y Vinos',
@@ -8,10 +8,9 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('admin_token');
-
-  if (token) {
+  // Se valida la firma y el vencimiento, no solo que la cookie exista:
+  // una cookie vieja o inventada debe mostrar el login, no el panel.
+  if (await adminAutenticado()) {
     redirect('/admin/dashboard');
   }
 

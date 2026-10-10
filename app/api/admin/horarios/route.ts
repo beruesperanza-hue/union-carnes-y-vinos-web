@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { exigirAdminApi } from '@/lib/admin-guard';
 
 export async function GET() {
+  const sinSesion = await exigirAdminApi();
+  if (sinSesion) return sinSesion;
+
   try {
     const horarios = await prisma.schedule.findMany({
       orderBy: [{ dia: 'asc' }, { hora: 'asc' }],
@@ -14,6 +18,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const sinSesion = await exigirAdminApi();
+  if (sinSesion) return sinSesion;
+
   try {
     const { dia, hora, capacidad, capacidadVereda } = await request.json();
 

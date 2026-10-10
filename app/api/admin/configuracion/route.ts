@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { exigirAdminApi } from '@/lib/admin-guard';
 
 export async function GET() {
+  const sinSesion = await exigirAdminApi();
+  if (sinSesion) return sinSesion;
+
   try {
     let settings = await prisma.settings.findFirst();
 
@@ -26,6 +30,9 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
+  const sinSesion = await exigirAdminApi();
+  if (sinSesion) return sinSesion;
+
   try {
     const data = await request.json();
 
