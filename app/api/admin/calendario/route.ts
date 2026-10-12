@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { dateAFechaISO, diaSemanaDe, fechaISOaDate, hoyEnES, sumarDias } from '@/lib/fechas';
+import { turnosDeRango } from '@/lib/turnos';
 import { cierresEnRango, diaCerradoCompleto, type CierreLite } from '@/lib/cierres';
 import { exigirAdminApi } from '@/lib/admin-guard';
 
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     const primero = `${mes}-01`;
     const ultimo = `${mes}-${String(diasDelMes).padStart(2, '0')}`;
 
-    const [reservas, horarios, cierres] = await Promise.all([
+    const [reservas, turnosPorFecha, cierres] = await Promise.all([
       prisma.reservation.findMany({
         where: {
           fecha: { gte: fechaISOaDate(primero), lte: fechaISOaDate(ultimo) },
@@ -29,17 +30,9 @@ export async function GET(request: NextRequest) {
         },
         select: { fecha: true, personas: true, ubicacion: true },
       }),
-      prisma.schedule.findMany({
-        where: { activo: true },
-        select: { dia: true, capacidad: true, capacidadVereda: true },
-      }),
+      turnosDeRango(primero, ultimo),
       cierresEnRango(primero, ultimo),
     ]);
-
-    const capacidadPorDia = new Map<string, number>();
-    for (const h of horarios) {
-      capacidadPorDia.set(h.dia, (capacidadPorDia.get(h.dia) || 0) + h.capacidad + h.capacidadVereda);
-    }
 
     const reservasPorFecha = new Map<
       string,
@@ -66,12 +59,14 @@ export async function GET(request: NextRequest) {
       const delDia = cierresPorFecha.get(f) || [];
       const cerradoDia = diaCerradoCompleto(delDia);
       const resumen = reservasPorFecha.get(f) || { reservas: 0, personas: 0, adentro: 0, vereda: 0 };
+      const turnos = turnosPorFecha.get(f)?.turnos ?? [];
       dias.push({
         fecha: f,
         diaSemana,
-        abre: capacidadPorDia.has(diaSemana),
+        abre: turnos.length > 0,
+        especial: turnos.some((t) => t.especial),
         ...resumen,
-        capacidad: capacidadPorDia.get(diaSemana) || 0,
+        capacidad: turnos.reduce((s, t) => s + t.capacidad + t.capacidadVereda, 0),
         cerradoDia,
         cerrados: cerradoDia ? 0 : delDia.length,
         motivo: delDia.find((c) => c.hora === '' && c.sector === 'todos')?.motivo ?? null,

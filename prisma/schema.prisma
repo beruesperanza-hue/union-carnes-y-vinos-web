@@ -62,6 +62,27 @@ model Cierre {
   @@index([fecha])
 }
 
+// Turnos que existen solo en una fecha concreta (día especial: abrir un lunes
+// para un evento, sumar un almuerzo, horario de Nochevieja). Se combinan con los
+// turnos semanales de Schedule; ver lib/turnos.ts.
+//   - Si la fecha ya tiene un turno semanal a esa `hora`, este lo REEMPLAZA
+//     para esa fecha (sirve para cambiar la capacidad de un día).
+//   - `reemplaza` = true → ese día usa SOLO sus turnos especiales y se ignoran
+//     los semanales. Es una propiedad de la fecha, repetida en todas sus filas
+//     (así, al borrar las filas, el modo desaparece solo).
+model TurnoEspecial {
+  id              String   @id @default(cuid())
+  fecha           DateTime
+  hora            String
+  capacidad       Int      @default(30)
+  capacidadVereda Int      @default(0)
+  reemplaza       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@unique([fecha, hora])
+  @@index([fecha])
+}
+
 model Settings {
   id                    String   @id @default(cuid())
   nombreRestaurante     String   @default("Unión Carnes y Vinos")

@@ -3,6 +3,7 @@ import prisma from '@/lib/db';
 import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { diaSemanaDe, esTurnoPasado, fechaISOaDate } from '@/lib/fechas';
 import { cierresDeFecha, diaCerradoCompleto, estadoCierreTurno } from '@/lib/cierres';
+import { turnosDeFecha } from '@/lib/turnos';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,10 +21,8 @@ export async function GET(request: NextRequest) {
     const fecha = fechaISOaDate(fechaStr);
     const diaNombre = diaSemanaDe(fechaStr);
 
-    const horarios = await prisma.schedule.findMany({
-      where: { dia: diaNombre, activo: true },
-      orderBy: { hora: 'asc' },
-    });
+    // Turnos semanales + turnos especiales de esa fecha (lib/turnos.ts).
+    const { turnos: horarios } = await turnosDeFecha(fechaStr);
 
     if (horarios.length === 0) {
       return NextResponse.json({

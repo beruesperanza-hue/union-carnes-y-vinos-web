@@ -150,7 +150,8 @@ export default function SettingsPage() {
             Abrimos jueves a domingo. Cargá la capacidad de adentro y de terraza por turno.
             &ldquo;Cerrar&rdquo; afecta ese horario <strong>todas las semanas</strong>. Para cerrar un
             día puntual, un turno de una fecha o la terraza por lluvia, usá el{' '}
-            <Link href="/admin/calendario" className="underline font-semibold">Calendario</Link>.
+            <Link href="/admin/calendario" className="underline font-semibold">Calendario</Link>. Ahí
+            también podés abrir un día especial o sumar un horario solo para una fecha.
           </p>
 
           <div className="bg-brasa-50 border border-brasa-200 rounded-xl p-5 mb-8">

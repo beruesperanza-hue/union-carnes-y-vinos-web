@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { diaSemanaDe, esTurnoPasado, fechaISOaDate, hoyEnES } from '@/lib/fechas';
+import { turnosDeFecha } from '@/lib/turnos';
 import { cierresDeFecha, diaCerradoCompleto, esFechaISO, estadoCierreTurno } from '@/lib/cierres';
 import { exigirAdminApi } from '@/lib/admin-guard';
 
@@ -18,11 +19,8 @@ export async function GET(request: NextRequest) {
 
     const diaSemana = diaSemanaDe(fecha);
 
-    const [horarios, reservas, cierres] = await Promise.all([
-      prisma.schedule.findMany({
-        where: { dia: diaSemana, activo: true },
-        orderBy: { hora: 'asc' },
-      }),
+    const [{ turnos: horarios, reemplaza }, reservas, cierres] = await Promise.all([
+      turnosDeFecha(fecha),
       prisma.reservation.findMany({
         where: { fecha: fechaISOaDate(fecha), estado: ESTADOS_RESERVA.CONFIRMADA },
         orderBy: [{ hora: 'asc' }, { createdAt: 'asc' }],
@@ -42,6 +40,7 @@ export async function GET(request: NextRequest) {
 
       return {
         hora: h.hora,
+        especial: h.especial,
         pasado: esTurnoPasado(fecha, h.hora),
         adentro: {
           capacidad: h.capacidad,
@@ -66,6 +65,8 @@ export async function GET(request: NextRequest) {
       hoy: hoyEnES(),
       diaSemana,
       abre: horarios.length > 0,
+      especial: horarios.some((h) => h.especial),
+      reemplaza,
       cerradoDia: diaCerradoCompleto(cierres),
       cierres,
       turnos,

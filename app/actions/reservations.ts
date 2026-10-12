@@ -5,6 +5,7 @@ import { sendReservationConfirmation, sendReservationCancellation } from '@/lib/
 import { MENSAJES, ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { esTurnoPasado, fechaISOaDate, formatearFechaLarga } from '@/lib/fechas';
 import { cierresDeFecha, diaCerradoCompleto, estadoCierreTurno } from '@/lib/cierres';
+import { turnosDeFecha } from '@/lib/turnos';
 import { revalidatePath } from 'next/cache';
 
 interface CreateReservationData {
@@ -31,16 +32,11 @@ export async function createReservation(data: CreateReservationData) {
     const ubicacion =
       data.ubicacion === UBICACIONES.VEREDA ? UBICACIONES.VEREDA : UBICACIONES.ADENTRO;
 
-    const dayOfWeek = fecha.getUTCDay();
-    const diaNombre = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][
-      dayOfWeek
-    ];
+    // Turnos semanales + especiales de esa fecha: un día especial reserva igual.
+    const { turnos } = await turnosDeFecha(data.fecha);
+    const horario = turnos.find((t) => t.hora === data.hora);
 
-    const horario = await prisma.schedule.findUnique({
-      where: { dia_hora: { dia: diaNombre, hora: data.hora } },
-    });
-
-    if (!horario || !horario.activo) {
+    if (!horario) {
       return { success: false, error: MENSAJES.TURNO_CERRADO };
     }
     if (ubicacion === UBICACIONES.VEREDA && horario.cerradoVereda) {

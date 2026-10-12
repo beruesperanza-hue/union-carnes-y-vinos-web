@@ -9,6 +9,7 @@ interface DiaResumen {
   fecha: string;
   diaSemana: string;
   abre: boolean;
+  especial: boolean;
   reservas: number;
   personas: number;
   adentro: number;
@@ -29,6 +30,7 @@ interface SectorTurno {
 
 interface Turno {
   hora: string;
+  especial: boolean;
   pasado: boolean;
   adentro: SectorTurno;
   vereda: SectorTurno & { existe: boolean };
@@ -56,6 +58,8 @@ interface ReservaDia {
 interface DetalleDia {
   fecha: string;
   abre: boolean;
+  especial: boolean;
+  reemplaza: boolean;
   cerradoDia: boolean;
   cierres: CierreFila[];
   turnos: Turno[];
@@ -67,6 +71,12 @@ interface CuerpoCierre {
   hasta?: string;
   hora?: string;
   sector?: 'todos' | 'adentro' | 'vereda';
+}
+
+interface TurnoEspecialForm {
+  hora: string;
+  capacidad: number;
+  capacidadVereda: number;
 }
 
 interface Pendiente {
@@ -121,6 +131,7 @@ export default function CalendarioPage() {
   const [motivo, setMotivo] = useState('');
   const [rangoDesde, setRangoDesde] = useState('');
   const [rangoHasta, setRangoHasta] = useState('');
+  const [quitarPendiente, setQuitarPendiente] = useState<{ hora: string; personas: number } | null>(null);
   const pedidoDia = useRef(0);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -153,8 +164,13 @@ export default function CalendarioPage() {
   }, [cargarMes]);
 
   useEffect(() => {
+    // Al cambiar de día se descarta el detalle anterior: si no, el título
+    // mostraría la fecha nueva sobre los turnos de la vieja hasta que llegue
+    // la respuesta, y un botón actuaría sobre datos de otro día.
+    setDetalle(null);
     setCargandoDia(true);
     setPendiente(null);
+    setQuitarPendiente(null);
     cargarDia();
   }, [cargarDia]);
 
@@ -186,6 +202,48 @@ export default function CalendarioPage() {
       });
       setPendiente(null);
       setMotivo('');
+      await recargar();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  const guardarEspeciales = async (body: {
+    desde: string;
+    hasta?: string;
+    turnos: TurnoEspecialForm[];
+    reemplaza: boolean;
+  }): Promise<boolean> => {
+    setOcupado(true);
+    setError(null);
+    try {
+      await api('/api/admin/turnos-especiales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      await recargar();
+      return true;
+    } catch (e) {
+      setError((e as Error).message);
+      return false;
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  const quitarEspecial = async (hora?: string) => {
+    setOcupado(true);
+    setError(null);
+    try {
+      await api('/api/admin/turnos-especiales', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ desde: seleccion, ...(hora ? { hora } : {}) }),
+      });
+      setQuitarPendiente(null);
       await recargar();
     } catch (e) {
       setError((e as Error).message);
@@ -335,7 +393,7 @@ export default function CalendarioPage() {
                     const base =
                       'relative flex min-h-[64px] sm:min-h-[78px] flex-col rounded-lg border p-1 sm:p-1.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ember-500';
                     const estado = !d.abre
-                      ? 'border-transparent bg-brasa-100/60 text-brasa-900/30 cursor-default'
+                      ? 'border-transparent bg-brasa-100/60 text-brasa-900/40 hover:bg-brasa-100'
                       : d.cerradoDia
                         ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
                         : 'border-brasa-200 bg-white hover:bg-brasa-50 text-brasa-900';
@@ -344,10 +402,9 @@ export default function CalendarioPage() {
                       <button
                         key={d.fecha}
                         type="button"
-                        disabled={!d.abre}
                         onClick={() => elegirDia(d.fecha)}
                         aria-pressed={elegido}
-                        aria-label={`${formatearFechaLarga(d.fecha)}${
+                        aria-label={`${formatearFechaLarga(d.fecha)}${d.especial ? ', día especial' : ''}${
                           !d.abre
                             ? ', no abre'
                             : d.cerradoDia
@@ -358,7 +415,10 @@ export default function CalendarioPage() {
                           esHoy && !elegido ? 'ring-2 ring-ember-400' : ''
                         } ${pasado && d.abre && !d.cerradoDia ? 'opacity-70' : ''}`}
                       >
-                        <span className="font-body text-xs font-semibold leading-none">{nro}</span>
+                        <span className="font-body text-xs font-semibold leading-none">
+                          {nro}
+                          {d.especial && <span className="ml-0.5 text-ember-500" aria-hidden="true">★</span>}
+                        </span>
 
                         {d.abre && d.cerradoDia && (
                           <span className="mt-auto font-body text-[10px] font-bold uppercase tracking-wide">
@@ -400,6 +460,7 @@ export default function CalendarioPage() {
                 <span className="flex items-center gap-1.5"><i className="inline-block h-1.5 w-5 rounded-full bg-ember-400" /> más de la mitad</span>
                 <span className="flex items-center gap-1.5"><i className="inline-block h-1.5 w-5 rounded-full bg-ember-600" /> casi lleno</span>
                 <span className="flex items-center gap-1.5"><i className="inline-block h-2 w-2 rounded-full bg-red-500" /> turno o terraza cerrados</span>
+                <span className="flex items-center gap-1.5"><span className="text-ember-500">★</span> horario especial</span>
               </div>
             </section>
 
@@ -463,6 +524,11 @@ export default function CalendarioPage() {
                 <h2 className="font-display uppercase text-xl text-brasa-900 leading-tight">
                   {formatearFechaLarga(seleccion)}
                 </h2>
+                {detalle?.especial && (
+                  <p className="font-body text-xs font-semibold text-ember-600 mt-1">
+                    ★ Día especial{detalle.reemplaza ? ' · solo estos horarios' : ''}
+                  </p>
+                )}
                 {detalle?.cerradoDia && (
                   <p className="font-body text-sm font-semibold text-red-700 mt-1">
                     Cerrado
@@ -478,10 +544,22 @@ export default function CalendarioPage() {
                   <div className="inline-block w-7 h-7 border-4 border-brasa-200 border-t-ember-500 rounded-full animate-spin" />
                 </div>
               ) : detalle && !detalle.abre ? (
-                <p className="p-5 font-body text-sm text-brasa-900/60">
-                  Este día de la semana no tiene turnos cargados. Los horarios se definen en{' '}
-                  <Link href="/admin/settings" className="underline">Configuración</Link>.
-                </p>
+                <div className="p-5 space-y-4">
+                  <p className="font-body text-sm text-brasa-900/60">
+                    Este día de la semana no tiene turnos habituales (se definen en{' '}
+                    <Link href="/admin/settings" className="underline">Configuración</Link>).
+                    {!esPasado && ' Podés abrirlo solo esta vez con un horario especial.'}
+                  </p>
+                  {!esPasado && (
+                    <FormHorariosEspeciales
+                      key={seleccion}
+                      fecha={seleccion}
+                      hayHabituales={false}
+                      ocupado={ocupado}
+                      onGuardar={guardarEspeciales}
+                    />
+                  )}
+                </div>
               ) : detalle ? (
                 <div className="p-5 space-y-5">
                   {/* Acciones del día */}
@@ -605,6 +683,7 @@ export default function CalendarioPage() {
                               <span className="font-display text-lg text-brasa-900">{t.hora}</span>
                               <div className="flex flex-wrap justify-end gap-1.5">
                                 {t.pasado && <Etiqueta tono="gris">Pasado</Etiqueta>}
+                                {t.especial && <Etiqueta tono="dorado">★ Especial</Etiqueta>}
                                 {!cerradoPorDia && t.adentro.cerradoFecha && t.vereda.cerradoFecha && (
                                   <Etiqueta tono="rojo">Turno cerrado</Etiqueta>
                                 )}
@@ -627,6 +706,47 @@ export default function CalendarioPage() {
                                 <span className="font-body text-xs text-brasa-900/35 self-center">Sin terraza</span>
                               )}
                             </div>
+
+                            {t.especial && !t.pasado && (
+                              <div className="mt-3">
+                                {quitarPendiente?.hora === t.hora ? (
+                                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2">
+                                    <p className="font-body text-xs text-amber-800">
+                                      Hay <strong>{quitarPendiente.personas}</strong> personas reservadas a las{' '}
+                                      {t.hora}. Si lo quitás no se podrá reservar más ese horario, pero las
+                                      reservas siguen existiendo.
+                                    </p>
+                                    <div className="flex gap-2">
+                                      <button
+                                        disabled={ocupado}
+                                        onClick={() => quitarEspecial(t.hora)}
+                                        className="px-3 py-1.5 rounded-lg bg-red-600 text-white font-body font-semibold text-xs disabled:opacity-50"
+                                      >
+                                        Quitar igual
+                                      </button>
+                                      <button
+                                        onClick={() => setQuitarPendiente(null)}
+                                        className="px-3 py-1.5 rounded-lg bg-brasa-100 font-body font-semibold text-xs"
+                                      >
+                                        Cancelar
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <button
+                                    disabled={ocupado}
+                                    onClick={() => {
+                                      const personas = t.adentro.reservadas + t.vereda.reservadas;
+                                      if (personas > 0) setQuitarPendiente({ hora: t.hora, personas });
+                                      else quitarEspecial(t.hora);
+                                    }}
+                                    className="font-body text-xs font-semibold text-red-600 hover:underline disabled:opacity-50"
+                                  >
+                                    Quitar horario especial
+                                  </button>
+                                )}
+                              </div>
+                            )}
 
                             {!bloqueado && (
                               <div className="mt-3 flex flex-wrap gap-2">
@@ -686,6 +806,24 @@ export default function CalendarioPage() {
                     </div>
                   </div>
 
+                  {/* Horarios especiales */}
+                  {!esPasado && (
+                    <details className="rounded-lg border border-brasa-200 bg-brasa-50/60 group" open={detalle.especial}>
+                      <summary className="cursor-pointer select-none px-4 py-3 font-body text-sm font-semibold text-brasa-900">
+                        ★ Horarios especiales para este día
+                      </summary>
+                      <div className="px-4 pb-4">
+                        <FormHorariosEspeciales
+                          key={seleccion}
+                          fecha={seleccion}
+                          hayHabituales
+                          ocupado={ocupado}
+                          onGuardar={guardarEspeciales}
+                        />
+                      </div>
+                    </details>
+                  )}
+
                   {/* Reservas del día */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -735,11 +873,18 @@ export default function CalendarioPage() {
   );
 }
 
-function Etiqueta({ children, tono }: { children: React.ReactNode; tono: 'rojo' | 'ambar' | 'gris' }) {
+function Etiqueta({
+  children,
+  tono,
+}: {
+  children: React.ReactNode;
+  tono: 'rojo' | 'ambar' | 'gris' | 'dorado';
+}) {
   const clases = {
     rojo: 'bg-red-100 text-red-700',
     ambar: 'bg-amber-100 text-amber-800',
     gris: 'bg-brasa-100 text-brasa-900/60',
+    dorado: 'bg-gold-400/30 text-brasa-900',
   }[tono];
   return (
     <span className={`rounded-full px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wide ${clases}`}>
@@ -764,6 +909,155 @@ function Ocupacion({ icono, sector }: { icono: string; sector: SectorTurno }) {
           className={`h-full rounded-full ${colorOcupacion(sector.reservadas, sector.capacidad)}`}
           style={{ width: `${Math.round(ratio * 100)}%` }}
         />
+      </div>
+    </div>
+  );
+}
+
+function FormHorariosEspeciales({
+  fecha,
+  hayHabituales,
+  ocupado,
+  onGuardar,
+}: {
+  fecha: string;
+  /** El día de la semana ya tiene turnos habituales (mostrar la opción de reemplazarlos). */
+  hayHabituales: boolean;
+  ocupado: boolean;
+  onGuardar: (body: {
+    desde: string;
+    hasta?: string;
+    turnos: TurnoEspecialForm[];
+    reemplaza: boolean;
+  }) => Promise<boolean>;
+}) {
+  const [turnos, setTurnos] = useState<TurnoEspecialForm[]>([
+    { hora: '20:00', capacidad: 30, capacidadVereda: 0 },
+  ]);
+  const [hasta, setHasta] = useState('');
+  const [reemplaza, setReemplaza] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+
+  const cambiar = (i: number, cambio: Partial<TurnoEspecialForm>) =>
+    setTurnos((prev) => prev.map((t, idx) => (idx === i ? { ...t, ...cambio } : t)));
+
+  const guardar = async () => {
+    setAviso(null);
+    if (turnos.some((t) => !/^([01]\d|2[0-3]):[0-5]\d$/.test(t.hora))) {
+      setAviso('Completá todos los horarios.');
+      return;
+    }
+    if (new Set(turnos.map((t) => t.hora)).size !== turnos.length) {
+      setAviso('Hay horarios repetidos.');
+      return;
+    }
+    if (turnos.some((t) => t.capacidad + t.capacidadVereda <= 0)) {
+      setAviso('Cada horario necesita capacidad (adentro o terraza).');
+      return;
+    }
+    const ok = await onGuardar({
+      desde: fecha,
+      ...(hasta && hasta > fecha ? { hasta } : {}),
+      turnos,
+      reemplaza: hayHabituales ? reemplaza : false,
+    });
+    if (ok) setAviso('Guardado.');
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-2">
+        {turnos.map((t, i) => (
+          <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] items-end gap-2">
+            <label className="font-body text-[11px] font-semibold text-brasa-900/60">
+              Hora
+              <input
+                type="time"
+                value={t.hora}
+                onChange={(e) => cambiar(i, { hora: e.target.value })}
+                className="mt-1 w-full border border-brasa-200 rounded-lg px-2 py-1.5 font-body text-sm font-normal bg-white"
+              />
+            </label>
+            <label className="font-body text-[11px] font-semibold text-brasa-900/60">
+              🏠 Adentro
+              <input
+                type="number"
+                min={0}
+                max={500}
+                value={t.capacidad}
+                onChange={(e) => cambiar(i, { capacidad: Math.max(0, parseInt(e.target.value) || 0) })}
+                className="mt-1 w-full border border-brasa-200 rounded-lg px-2 py-1.5 font-body text-sm font-normal bg-white"
+              />
+            </label>
+            <label className="font-body text-[11px] font-semibold text-brasa-900/60">
+              ☀️ Terraza
+              <input
+                type="number"
+                min={0}
+                max={500}
+                value={t.capacidadVereda}
+                onChange={(e) => cambiar(i, { capacidadVereda: Math.max(0, parseInt(e.target.value) || 0) })}
+                className="mt-1 w-full border border-brasa-200 rounded-lg px-2 py-1.5 font-body text-sm font-normal bg-white"
+              />
+            </label>
+            <button
+              type="button"
+              disabled={turnos.length === 1}
+              onClick={() => setTurnos((prev) => prev.filter((_, idx) => idx !== i))}
+              className="mb-0.5 h-8 w-8 rounded-lg bg-brasa-100 hover:bg-brasa-200 font-body text-sm disabled:opacity-30"
+              aria-label="Quitar este horario"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        {turnos.length < 8 && (
+          <button
+            type="button"
+            onClick={() => setTurnos((prev) => [...prev, { hora: '', capacidad: 30, capacidadVereda: 0 }])}
+            className="font-body text-xs font-semibold text-ember-600 hover:underline"
+          >
+            + Agregar otro horario
+          </button>
+        )}
+      </div>
+
+      {hayHabituales && (
+        <label className="flex items-start gap-2 font-body text-xs text-brasa-900/70">
+          <input
+            type="checkbox"
+            checked={reemplaza}
+            onChange={(e) => setReemplaza(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            Usar <strong>solo</strong> estos horarios ese día (se ignoran los habituales). Si no, se
+            suman a los habituales y, a la misma hora, reemplazan su capacidad.
+          </span>
+        </label>
+      )}
+
+      <label className="block font-body text-[11px] font-semibold text-brasa-900/60">
+        Repetir hasta (opcional, inclusive)
+        <input
+          type="date"
+          min={fecha}
+          value={hasta}
+          onChange={(e) => setHasta(e.target.value)}
+          className="mt-1 w-full border border-brasa-200 rounded-lg px-2 py-1.5 font-body text-sm font-normal bg-white"
+        />
+      </label>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          disabled={ocupado}
+          onClick={guardar}
+          className="btn btn-ember !py-2 !text-sm disabled:opacity-50"
+        >
+          {ocupado ? 'Guardando…' : 'Guardar horarios especiales'}
+        </button>
+        {aviso && <span className="font-body text-xs text-brasa-900/60">{aviso}</span>}
       </div>
     </div>
   );
