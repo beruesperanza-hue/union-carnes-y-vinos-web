@@ -140,6 +140,7 @@ export async function POST(request: NextRequest) {
       hora: body.hora,
       ubicacion: body.ubicacion,
       comentarios: body.comentarios,
+      origen: 'bot',
     });
     return NextResponse.json(result, { status: result.success ? 200 : 400 });
   }

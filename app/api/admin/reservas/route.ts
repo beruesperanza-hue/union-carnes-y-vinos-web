@@ -20,6 +20,15 @@ export async function GET(request: NextRequest) {
 
     let whereClause: any = {};
 
+    // Reservas vigentes de hoy en adelante cuyo mail de confirmación falló.
+    if (filtro === 'sinmail') {
+      whereClause = {
+        estado: 'confirmada',
+        emailEstado: 'fallido',
+        fecha: { gte: fechaISOaDate(hoyEnES()) },
+      };
+    }
+
     // "Hoy" es hoy en Valencia, no en la zona horaria del servidor.
     let diaISO: string | null = null;
     if (filtro === 'hoy') {

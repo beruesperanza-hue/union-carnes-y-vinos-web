@@ -19,12 +19,20 @@ model Reservation {
   ubicacion   String   @default("adentro")
   comentarios String?
   estado      String   @default("confirmada")
+  // Quién la cargó: "web" (formulario público), "admin" (panel) o "bot".
+  // Solo las de "web" disparan aviso en las pantallas del local.
+  origen      String   @default("web")
+  // Resultado del mail de confirmación: "enviado" | "fallido" | "sin-email".
+  // null = reserva anterior a este registro (no se sabe) o envío en curso.
+  emailEstado String?
+  emailError  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@unique([fecha, hora, email])
   @@index([fecha])
   @@index([estado])
+  @@index([createdAt])
 }
 
 model Schedule {
@@ -92,6 +100,7 @@ model Settings {
   capacidadPorTurno     Int      @default(30)
   diasAvanzados         Int      @default(60)
   mensajeConfirmacion   String   @default("¡Gracias! Tu reserva fue realizada correctamente.")
+  horariosVersion       Int      @default(0)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }

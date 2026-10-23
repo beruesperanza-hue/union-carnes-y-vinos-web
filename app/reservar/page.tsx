@@ -8,7 +8,7 @@ import { NEGOCIO } from '@/lib/constants';
 export const metadata: Metadata = {
   title: 'Reservar Mesa',
   description:
-    'Reservá online en segundos o escribinos por WhatsApp. Abierto para cenas de jueves a domingo. Carrer de Puerto Rico 38, Ruzafa, Valencia.',
+    'Reservá online en segundos o escribinos por WhatsApp. Abierto lunes, jueves, viernes y sábado (sábados también al mediodía). Carrer de Puerto Rico 38, Ruzafa, Valencia.',
   alternates: { canonical: '/reservar' },
 };
 
@@ -61,14 +61,6 @@ export default function ReservarPage() {
           <div className="border-t border-brasa-200 pt-6">
             <h3 className="eyebrow text-brasa-900/50 mb-3">Otras formas de reservar</h3>
             <div className="flex flex-col gap-2">
-              <a
-                href={NEGOCIO.theforkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-body text-sm text-brasa-900/70 underline underline-offset-4 hover:text-ember-600"
-              >
-                Reservar en TheFork →
-              </a>
               <a
                 href={NEGOCIO.whatsappUrl}
                 target="_blank"

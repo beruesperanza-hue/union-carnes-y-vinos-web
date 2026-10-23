@@ -40,7 +40,7 @@ export function restaurantSchema() {
     acceptsReservations: 'True',
     hasMenu: `${NEGOCIO.sitio}/carta`,
     foundingDate: NEGOCIO.fundacion,
-    sameAs: [NEGOCIO.instagramUrl, NEGOCIO.theforkUrl, NEGOCIO.tripadvisorUrl],
+    sameAs: [NEGOCIO.instagramUrl, NEGOCIO.tripadvisorUrl],
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '9.4',

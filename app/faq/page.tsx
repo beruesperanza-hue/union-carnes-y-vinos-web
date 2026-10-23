@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     pregunta: '¿Cuál es el horario de atención?',
-    respuesta: 'Abierto de jueves a domingo, de 19:30 a 23:30.',
+    respuesta: 'Abrimos lunes, jueves y viernes de 19:30 a 23:00; sábados de 14:00 a 16:00 y de 19:30 a 23:30. Martes, miércoles y domingos cerramos.',
   },
   {
     pregunta: '¿Es necesario hacer reserva?',

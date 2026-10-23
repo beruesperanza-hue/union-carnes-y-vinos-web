@@ -25,7 +25,7 @@ interface Settings {
   direccionRestaurante: string;
 }
 
-const DIAS_ABIERTOS = ['jueves', 'viernes', 'sábado', 'domingo'];
+const DIAS_ABIERTOS = ['lunes', 'jueves', 'viernes', 'sábado'];
 
 export default function SettingsPage() {
   const [horarios, setHorarios] = useState<Schedule[]>([]);
@@ -33,7 +33,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newHora, setNewHora] = useState('20:00');
-  const [newDia, setNewDia] = useState('jueves');
+  const [newDia, setNewDia] = useState('lunes');
 
   useEffect(() => {
     loadData();
@@ -144,10 +144,12 @@ export default function SettingsPage() {
           )}
         </div>
 
+        {settings && <ConfiguracionMail destinoInicial={settings.emailRestaurante} />}
+
         <div className="bg-white rounded-xl border border-brasa-200 p-8">
           <h2 className="font-display uppercase text-2xl text-brasa-900 mb-2">Horarios y capacidad</h2>
           <p className="font-body text-sm text-brasa-900/50 mb-6">
-            Abrimos jueves a domingo. Cargá la capacidad de adentro y de terraza por turno.
+            Abrimos lunes, jueves, viernes y sábado (sábado también al mediodía). Cargá la capacidad de adentro y de terraza por turno.
             &ldquo;Cerrar&rdquo; afecta ese horario <strong>todas las semanas</strong>. Para cerrar un
             día puntual, un turno de una fecha o la terraza por lluvia, usá el{' '}
             <Link href="/admin/calendario" className="underline font-semibold">Calendario</Link>. Ahí
@@ -243,6 +245,126 @@ function Campo({
       <label className="font-body text-xs font-semibold text-brasa-900/70 block mb-1.5">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
         className="w-full border border-brasa-200 rounded-lg px-3 py-2 font-body text-sm" />
+    </div>
+  );
+}
+
+interface EstadoMail {
+  configurado: boolean;
+  faltan: string[];
+  remitente: string;
+  dryRun: boolean;
+}
+
+/** Comprueba que los mails de confirmación salen y permite mandarse uno de prueba. */
+function ConfiguracionMail({ destinoInicial }: { destinoInicial: string }) {
+  const [estado, setEstado] = useState<EstadoMail | null>(null);
+  const [para, setPara] = useState(destinoInicial);
+  const [enviando, setEnviando] = useState(false);
+  const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/mail')
+      .then((r) => r.json())
+      .then(setEstado)
+      .catch(() => setEstado(null));
+  }, []);
+
+  const probar = async () => {
+    setEnviando(true);
+    setResultado(null);
+    try {
+      const res = await fetch('/api/admin/mail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: para }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setResultado({ ok: true, texto: `Mail enviado a ${para}. Revisá la bandeja (y spam).` });
+      } else {
+        setResultado({ ok: false, texto: data.error || 'No se pudo enviar el mail de prueba.' });
+      }
+    } catch {
+      setResultado({ ok: false, texto: 'Sin conexión con el servidor.' });
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-brasa-200 p-8 mb-8">
+      <h2 className="font-display uppercase text-2xl text-brasa-900 mb-2">Mail de confirmaciones</h2>
+      <p className="font-body text-sm text-brasa-900/50 mb-5">
+        Cada reserva hecha desde la web le manda un mail de confirmación al cliente. Si alguno no sale,
+        aparece un aviso en las pantallas y en la lista de reservas, con botón para reenviarlo.
+      </p>
+
+      {estado === null ? (
+        <p className="font-body text-sm text-brasa-900/50">Comprobando…</p>
+      ) : estado.configurado || estado.dryRun ? (
+        <p className="font-body text-sm text-green-700 mb-5">
+          ✅ Configurado. Los mails salen desde <strong>{estado.remitente}</strong>.
+          {estado.dryRun && ' (Modo de prueba: no se envían de verdad.)'}
+        </p>
+      ) : (
+        <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 font-body text-sm text-red-800">
+          <p className="font-semibold">❌ Los mails no pueden salir: faltan datos en el servidor.</p>
+          <p className="mt-1">
+            Variables sin cargar en Railway: <code className="font-mono">{estado.faltan.join(', ')}</code>
+          </p>
+        </div>
+      )}
+
+      <div className="grid sm:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="font-body text-xs font-semibold text-brasa-900/70">
+          Mandar un mail de prueba a
+          <input
+            type="email"
+            value={para}
+            onChange={(e) => setPara(e.target.value)}
+            className="mt-1.5 w-full border border-brasa-200 rounded-lg px-3 py-2 font-body text-sm font-normal"
+          />
+        </label>
+        <button onClick={probar} disabled={enviando || !para} className="btn btn-ember !py-2.5 disabled:opacity-50">
+          {enviando ? 'Enviando…' : 'Enviar prueba'}
+        </button>
+      </div>
+
+      {resultado && (
+        <p className={`mt-3 font-body text-sm ${resultado.ok ? 'text-green-700' : 'text-red-700'}`}>
+          {resultado.ok ? '✅ ' : '❌ '}
+          {resultado.texto}
+        </p>
+      )}
+
+      <details className="mt-5 font-body text-sm text-brasa-900/70">
+        <summary className="cursor-pointer font-semibold text-brasa-900">Si dejaron de llegar los mails</summary>
+        <div className="mt-3 space-y-2">
+          <p>
+            Lo más común es el error <code className="font-mono">invalid_grant</code>: el permiso de
+            Gmail se venció. Pasa cuando la app de Google quedó en modo &ldquo;Prueba&rdquo; (el permiso
+            dura 7 días). La solución:
+          </p>
+          <ol className="list-decimal pl-5 space-y-1">
+            <li>
+              En Google Cloud Console, en la pantalla de consentimiento de OAuth, pasá la app a{' '}
+              <strong>&ldquo;En producción&rdquo;</strong>.
+            </li>
+            <li>
+              Generá un nuevo token en{' '}
+              <a className="underline" href="https://developers.google.com/oauthplayground" target="_blank" rel="noopener noreferrer">
+                OAuth Playground
+              </a>{' '}
+              (con &ldquo;Use your own OAuth credentials&rdquo; y el permiso <code className="font-mono">gmail.send</code>).
+            </li>
+            <li>
+              Pegalo en Railway como <code className="font-mono">GMAIL_REFRESH_TOKEN</code>, esperá el
+              redeploy y mandá otra prueba desde acá.
+            </li>
+          </ol>
+        </div>
+      </details>
     </div>
   );
 }

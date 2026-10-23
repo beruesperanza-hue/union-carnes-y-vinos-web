@@ -132,8 +132,8 @@ export default function VinosArgentinosPage() {
           </p>
 
           <p>
-            Estamos en {NEGOCIO.direccion.calle}, Ruzafa — abrimos jueves a domingo de 19:30 a
-            23:30.
+            Estamos en {NEGOCIO.direccion.calle}, Ruzafa — abrimos lunes, jueves y viernes de 19:30 a
+            23:00, y los sábados de 14:00 a 16:00 y de 19:30 a 23:30.
           </p>
         </div>
 

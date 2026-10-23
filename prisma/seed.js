@@ -20,12 +20,13 @@ async function main() {
       },
     });
 
-    // Horarios: solo abrimos jueves a domingo, 19:30 a 22:00 (última mesa).
+    // Horarios (oct-2026): lunes/jueves/viernes cenas hasta 23:00, sábado almuerzo
+    // 14:00–16:00 y cenas hasta 23:30, domingo cerrado. Los turnos son las horas de
+    // última mesa (cierre menos 1:30). Ver prisma/horarios-2026-10.js (producción).
     // Capacidad de vereda arranca en 0 — hay que cargarla real en Configuración.
-    const dias = ['jueves', 'viernes', 'sábado', 'domingo'];
-    const horas = ['19:30', '20:00', '20:30', '21:00', '21:30', '22:00'];
+    const turnos = require('./horarios-2026-10').TURNOS;
 
-    for (const dia of dias) {
+    for (const [dia, horas] of Object.entries(turnos)) {
       for (const hora of horas) {
         await prisma.schedule.upsert({
           where: { dia_hora: { dia, hora } },

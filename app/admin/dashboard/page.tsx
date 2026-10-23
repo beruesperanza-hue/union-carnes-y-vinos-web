@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AdminHeader from '@/components/admin/AdminHeader';
+import { EVENTO_RESERVAS_CAMBIARON } from '@/components/admin/NotificadorReservas';
 
 interface Stats {
   reservasHoy: number;
@@ -20,11 +21,17 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/admin/stats')
-      .then((r) => r.json())
-      .then(setStats)
-      .catch((err) => console.error('Error loading stats:', err))
-      .finally(() => setLoading(false));
+    const cargar = () =>
+      fetch('/api/admin/stats')
+        .then((r) => r.json())
+        .then(setStats)
+        .catch((err) => console.error('Error loading stats:', err))
+        .finally(() => setLoading(false));
+
+    cargar();
+    // Cuando el avisador detecta una reserva nueva, los números se actualizan solos.
+    window.addEventListener(EVENTO_RESERVAS_CAMBIARON, cargar);
+    return () => window.removeEventListener(EVENTO_RESERVAS_CAMBIARON, cargar);
   }, []);
 
   const Tile = ({

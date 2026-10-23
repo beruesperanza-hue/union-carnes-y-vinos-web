@@ -2,10 +2,18 @@ import { google } from 'googleapis';
 import { NEGOCIO, UBICACIONES, UBICACIONES_LABEL } from '@/lib/constants';
 
 // Gmail API vía OAuth2 (usa HTTPS, no SMTP → funciona en Railway).
-// Mismo patrón que La Esperanza. Hasta que se configuren las credenciales
-// (GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN en Railway), el envío falla
-// silenciosamente (se loguea el error) sin romper la reserva.
+// Mismo patrón que La Esperanza. Variables en Railway: GMAIL_CLIENT_ID,
+// GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN (+ EMAIL_FROM opcional).
+//
+// Un fallo de envío NUNCA rompe la reserva, pero tampoco se pierde en silencio:
+// enviarMail devuelve el resultado, quien llama lo guarda en la reserva
+// (Reservation.emailEstado) y el panel lo muestra con opción de reenviar.
+// EMAIL_DRY_RUN=1 registra el mail en el log en vez de enviarlo (desarrollo).
 const FROM = process.env.EMAIL_FROM || NEGOCIO.emailLegacy;
+
+const VARIABLES_GMAIL = ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN'] as const;
+const TIMEOUT_ENVIO_MS = 10_000;
+const ESPERA_REINTENTO_MS = 1_500;
 
 const LOGO_URL = `${NEGOCIO.sitio}/fotos/hero-entrana.jpg`;
 const WHATSAPP_URL = `${NEGOCIO.whatsappUrl}`;
@@ -18,6 +26,74 @@ const oauth2Client = new google.auth.OAuth2(
 oauth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
 const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+export interface ResultadoMail {
+  ok: boolean;
+  /** Motivo en castellano, apto para mostrarle a quien administra. */
+  error?: string;
+  /** No había a quién enviarle (reserva cargada sin email). */
+  omitido?: boolean;
+}
+
+/** Dirección razonable y sin saltos de línea (evita inyectar cabeceras en el mail). */
+export function esEmailValido(valor: unknown): valor is string {
+  return (
+    typeof valor === 'string' &&
+    valor.length <= 254 &&
+    /^[^\s@<>",;:\\]+@[^\s@<>",;:\\]+\.[^\s@<>",;:\\]{2,}$/.test(valor)
+  );
+}
+
+/** Texto que viene del cliente, antes de meterlo en el HTML del mail. */
+function esc(valor: string): string {
+  return valor
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export function configuracionMail(): { configurado: boolean; faltan: string[]; remitente: string; dryRun: boolean } {
+  const faltan = VARIABLES_GMAIL.filter((v) => !process.env[v]);
+  return {
+    configurado: faltan.length === 0,
+    faltan: [...faltan],
+    remitente: FROM,
+    dryRun: process.env.EMAIL_DRY_RUN === '1',
+  };
+}
+
+/** Traduce el error de Gmail/Google a algo que se pueda accionar. */
+function describirError(error: unknown): { mensaje: string; reintentable: boolean } {
+  const e = error as { message?: string; code?: number | string; status?: number; response?: { status?: number; data?: { error?: string; error_description?: string } } };
+  const texto = `${e?.message ?? ''} ${e?.response?.data?.error ?? ''} ${e?.response?.data?.error_description ?? ''}`;
+  const status = e?.response?.status ?? e?.status ?? (typeof e?.code === 'number' ? e.code : undefined);
+  const codigo = typeof e?.code === 'string' ? e.code : '';
+
+  if (/invalid_grant/i.test(texto)) {
+    return {
+      mensaje: 'Google rechazó el permiso de envío (invalid_grant): el token de Gmail venció o fue revocado. Hay que generar uno nuevo.',
+      reintentable: false,
+    };
+  }
+  if (/invalid_client|unauthorized_client/i.test(texto)) {
+    return { mensaje: 'Client ID o Client Secret de Gmail incorrectos.', reintentable: false };
+  }
+  if (status === 401 || status === 403) {
+    return { mensaje: 'Gmail rechazó el envío: falta permiso (scope gmail.send) o la cuenta bloqueó el acceso.', reintentable: false };
+  }
+  if (status === 429) {
+    return { mensaje: 'Se alcanzó el límite diario de envíos de Gmail.', reintentable: false };
+  }
+  if (/ETIMEDOUT|ECONNRESET|ENOTFOUND|EAI_AGAIN|ECONNREFUSED|timeout|socket hang up/i.test(`${texto} ${codigo}`)) {
+    return { mensaje: 'No se pudo conectar con Gmail (red o tiempo de espera agotado).', reintentable: true };
+  }
+  if (status && status >= 500) {
+    return { mensaje: `Gmail tuvo un error temporal (${status}).`, reintentable: true };
+  }
+  return { mensaje: (e?.message || 'Error desconocido al enviar').slice(0, 160), reintentable: false };
+}
 
 // RFC 2047 encoded-word — necesario para cualquier header con tildes/ñ
 // (Subject y el nombre visible del remitente), si no el cliente de mail
@@ -63,20 +139,44 @@ function buildRawMessage(to: string, subject: string, html: string, text: string
     .replace(/=+$/, '');
 }
 
-async function enviarMail(to: string, subject: string, html: string, text: string): Promise<boolean> {
-  if (to.includes('sin-email.union')) return true; // walk-in sin email real, no hay a quién mandarle
+const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-  try {
-    const res = await gmail.users.messages.send({
-      userId: 'me',
-      requestBody: { raw: buildRawMessage(to, subject, html, text) },
-    });
-    console.log('✅ EMAIL ENVIADO A:', to, '- id:', res.data.id);
-    return true;
-  } catch (error) {
-    console.error('❌ ERROR AL ENVIAR EMAIL (¿configuraste GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN?):', error);
-    return false;
+async function enviarMail(to: string, subject: string, html: string, text: string): Promise<ResultadoMail> {
+  if (to.includes('sin-email.union')) return { ok: true, omitido: true }; // walk-in sin email real
+
+  // Defensa en profundidad: aunque la validación se haga antes, un salto de línea acá
+  // permitiría agregar cabeceras (Bcc:, etc.) al mail que sale de la casilla del local.
+  if (!esEmailValido(to)) return { ok: false, error: 'La dirección de email no es válida.' };
+
+  const config = configuracionMail();
+  if (config.dryRun) {
+    console.log(`✉️  [EMAIL_DRY_RUN] a ${to} · asunto: ${subject}`);
+    return { ok: true };
   }
+  if (!config.configurado) {
+    const error = `Faltan variables de Gmail en el servidor: ${config.faltan.join(', ')}.`;
+    console.error('❌ EMAIL NO ENVIADO:', error);
+    return { ok: false, error };
+  }
+
+  let ultimo = 'Error desconocido al enviar';
+  for (let intento = 1; intento <= 2; intento++) {
+    try {
+      const res = await gmail.users.messages.send(
+        { userId: 'me', requestBody: { raw: buildRawMessage(to, subject, html, text) } },
+        { timeout: TIMEOUT_ENVIO_MS }
+      );
+      console.log('✅ EMAIL ENVIADO A:', to, '- id:', res.data.id);
+      return { ok: true };
+    } catch (error) {
+      const { mensaje, reintentable } = describirError(error);
+      ultimo = mensaje;
+      console.error(`❌ ERROR AL ENVIAR EMAIL (intento ${intento}/2):`, mensaje, error);
+      if (!reintentable || intento === 2) break;
+      await espera(ESPERA_REINTENTO_MS);
+    }
+  }
+  return { ok: false, error: ultimo };
 }
 
 function boton(href: string, label: string, bg: string, color = '#ffffff'): string {
@@ -201,7 +301,7 @@ export async function sendReservationConfirmation(
   personas: number,
   telefono: string,
   ubicacion: string = UBICACIONES.ADENTRO
-) {
+): Promise<ResultadoMail> {
   const ubicacionLabel = UBICACIONES_LABEL[ubicacion] || UBICACIONES_LABEL[UBICACIONES.ADENTRO];
 
   const fila = (label: string, valor: string) => `
@@ -211,7 +311,7 @@ export async function sendReservationConfirmation(
     </tr>`;
 
   const contenido = `
-    <p style="margin:0 0 16px 0;">Hola <strong>${nombre}</strong>,</p>
+    <p style="margin:0 0 16px 0;">Hola <strong>${esc(nombre)}</strong>,</p>
     <p style="margin:0 0 24px 0;">¡Tu mesa quedó reservada! Estos son los datos:</p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
@@ -219,7 +319,7 @@ export async function sendReservationConfirmation(
       ${fila('Hora', hora)}
       ${fila('Personas', String(personas))}
       ${fila('Mesa', ubicacionLabel)}
-      ${fila('Teléfono', telefono)}
+      ${fila('Teléfono', esc(telefono))}
     </table>
 
     ${
@@ -250,14 +350,15 @@ export async function sendReservationConfirmation(
 
   return enviarMail(
     email,
-    'Confirmación de tu reserva en Unión Carnes y Vinos',
+    // La fecha en el asunto: se encuentra en la bandeja y no se agrupa con otras reservas.
+    `Reserva confirmada: ${fecha}, ${hora} · Unión Carnes y Vinos`,
     layout(`Reserva confirmada para el ${fecha} a las ${hora}.`, 'Reserva confirmada', contenido),
     texto
   );
 }
 
-export async function sendReservationCancellation(email: string, nombre?: string) {
-  const saludo = nombre ? `Hola <strong>${nombre}</strong>,` : 'Hola,';
+export async function sendReservationCancellation(email: string, nombre?: string): Promise<ResultadoMail> {
+  const saludo = nombre ? `Hola <strong>${esc(nombre)}</strong>,` : 'Hola,';
 
   const contenido = `
     <p style="margin:0 0 16px 0;">${saludo}</p>
@@ -278,6 +379,26 @@ export async function sendReservationCancellation(email: string, nombre?: string
     email,
     'Cancelación de tu reserva en Unión Carnes y Vinos',
     layout('Tu reserva fue cancelada.', 'Reserva cancelada', contenido),
+    texto
+  );
+}
+
+/** Para el botón "Enviar mail de prueba" de Configuración. */
+export async function sendTestEmail(to: string): Promise<ResultadoMail> {
+  const contenido = `
+    <p style="margin:0 0 16px 0;">Este es un mail de prueba del sistema de reservas.</p>
+    <p style="margin:0 0 8px 0;">Si lo estás leyendo, <strong>las confirmaciones de reserva están saliendo bien</strong>. ✅</p>
+  `;
+  const texto = [
+    'Este es un mail de prueba del sistema de reservas.',
+    'Si lo estás leyendo, las confirmaciones de reserva están saliendo bien.',
+    '',
+    PIE_TEXTO,
+  ].join('\n');
+  return enviarMail(
+    to,
+    'Prueba de mail · Unión Carnes y Vinos',
+    layout('Prueba del sistema de reservas.', 'Mail de prueba', contenido),
     texto
   );
 }

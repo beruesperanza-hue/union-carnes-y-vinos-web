@@ -14,6 +14,7 @@ export default function NuevaReservaModal({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [avisoMail, setAvisoMail] = useState<string | null>(null);
   const [data, setData] = useState({
     nombre: '',
     apellido: '',
@@ -48,7 +49,12 @@ export default function NuevaReservaModal({
     setLoading(false);
     if (res.success) {
       onCreated();
-      onClose();
+      if (res.emailEnviado === false) {
+        // La reserva quedó cargada; solo se avisa que el cliente no recibió el mail.
+        setAvisoMail(res.emailError || 'No se pudo enviar el mail de confirmación.');
+      } else {
+        onClose();
+      }
     } else {
       setError(res.error || 'Error al crear la reserva');
     }
@@ -68,7 +74,19 @@ export default function NuevaReservaModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {avisoMail && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-300 rounded-lg font-body text-sm text-amber-900 space-y-3">
+            <p>
+              <strong>La reserva quedó cargada, pero el mail de confirmación no salió.</strong> {avisoMail}
+            </p>
+            <p>Avisale al cliente por WhatsApp. Después podés reenviar el mail desde la lista de reservas.</p>
+            <button type="button" onClick={onClose} className="btn btn-ember !py-2 !text-sm">
+              Entendido
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className={avisoMail ? 'hidden' : 'space-y-4'}>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="font-body text-xs font-semibold text-brasa-900/70 block mb-1">Fecha</label>

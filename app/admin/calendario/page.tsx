@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { fechaISOaDate, formatearFechaLarga, hoyEnES } from '@/lib/fechas';
+import { EVENTO_RESERVAS_CAMBIARON } from '@/components/admin/NotificadorReservas';
 
 interface DiaResumen {
   fecha: string;
@@ -133,16 +135,19 @@ export default function CalendarioPage() {
   const [rangoHasta, setRangoHasta] = useState('');
   const [quitarPendiente, setQuitarPendiente] = useState<{ hora: string; personas: number } | null>(null);
   const pedidoDia = useRef(0);
+  const pedidoMes = useRef(0);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const cargarMes = useCallback(async () => {
+    const pedido = ++pedidoMes.current;
     try {
       const data = await api<{ dias: DiaResumen[] }>(`/api/admin/calendario?mes=${mes}`);
-      setDias(data.dias);
+      // Si mientras tanto se cambió de mes, esta respuesta ya no corresponde.
+      if (pedido === pedidoMes.current) setDias(data.dias);
     } catch (e) {
-      setError((e as Error).message);
+      if (pedido === pedidoMes.current) setError((e as Error).message);
     } finally {
-      setCargandoMes(false);
+      if (pedido === pedidoMes.current) setCargandoMes(false);
     }
   }, [mes]);
 
@@ -174,6 +179,17 @@ export default function CalendarioPage() {
     cargarDia();
   }, [cargarDia]);
 
+  // /admin/calendario?fecha=YYYY-MM-DD abre ese día (lo usan los avisos de reserva nueva).
+  // Reacciona a cada cambio de la URL: estando ya acá, "Ver el día" solo cambia el parámetro.
+  const params = useSearchParams();
+  useEffect(() => {
+    const f = params.get('fecha');
+    if (f && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
+      setMes(f.slice(0, 7));
+      setSeleccion(f);
+    }
+  }, [params]);
+
   const irAMes = (nuevo: string) => {
     setMes(nuevo);
     setSeleccion(nuevo === hoy.slice(0, 7) ? hoy : `${nuevo}-01`);
@@ -190,6 +206,13 @@ export default function CalendarioPage() {
   const recargar = async () => {
     await Promise.all([cargarMes(), cargarDia()]);
   };
+
+  // Cuando el avisador detecta una reserva nueva, la ocupación se actualiza sola.
+  useEffect(() => {
+    window.addEventListener(EVENTO_RESERVAS_CAMBIARON, recargar);
+    return () => window.removeEventListener(EVENTO_RESERVAS_CAMBIARON, recargar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cargarMes, cargarDia]);
 
   const ejecutar = async (accion: 'cerrar' | 'reabrir', body: CuerpoCierre, motivoTexto?: string) => {
     setOcupado(true);

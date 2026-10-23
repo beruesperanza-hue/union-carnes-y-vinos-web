@@ -148,7 +148,7 @@ export default function EntranaEnValenciaPage() {
           </h2>
           <p>
             Unión Carnes y Vinos está en {NEGOCIO.direccion.calle}, en el corazón de Ruzafa —
-            abrimos jueves, viernes, sábado y domingo de 19:30 a 23:30.
+            abrimos lunes, jueves y viernes de 19:30 a 23:00, y los sábados de 14:00 a 16:00 y de 19:30 a 23:30.
           </p>
         </div>
 

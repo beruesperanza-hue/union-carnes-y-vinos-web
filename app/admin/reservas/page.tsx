@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import AdminHeader from '@/components/admin/AdminHeader';
 import NuevaReservaModal from '@/components/admin/NuevaReservaModal';
 import { cancelReservation, deleteReservation } from '@/app/actions/reservations';
 import { UBICACIONES } from '@/lib/constants';
 import { formatearFechaLarga } from '@/lib/fechas';
+import { EVENTO_RESERVAS_CAMBIARON } from '@/components/admin/NotificadorReservas';
 
 interface Reservation {
   id: string;
@@ -19,27 +21,38 @@ interface Reservation {
   ubicacion?: string;
   comentarios?: string;
   estado: string;
+  emailEstado?: string | null;
+  emailError?: string | null;
 }
 
 export default function AdminReservasPage() {
   const [reservas, setReservas] = useState<Reservation[]>([]);
-  const [filtro, setFiltro] = useState<'hoy' | 'manana' | 'todas' | 'fecha'>('hoy');
+  const [filtro, setFiltro] = useState<'hoy' | 'manana' | 'todas' | 'fecha' | 'sinmail'>('hoy');
   const [fechaFiltro, setFechaFiltro] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
 
-  // Si llega ?fecha=YYYY-MM-DD (desde el calendario) arranca filtrando ese día.
-  // Se lee de window.location para no exigir un <Suspense> con useSearchParams.
+  // ?fecha=YYYY-MM-DD (desde el calendario) o ?filtro=sinmail (desde el aviso de mails
+  // fallidos). Se reacciona a cada cambio de la URL, no solo al montar: desde esta misma
+  // página, un enlace que solo cambia el parámetro no remonta el componente.
+  const params = useSearchParams();
   const [listo, setListo] = useState(false);
+  const primeraLectura = useRef(true);
   useEffect(() => {
-    const f = new URLSearchParams(window.location.search).get('fecha');
+    const f = params.get('fecha');
     if (f && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
       setFiltro('fecha');
       setFechaFiltro(f);
+    } else if (params.get('filtro') === 'sinmail') {
+      setFiltro('sinmail');
+    } else if (!primeraLectura.current) {
+      // Se navegó a /admin/reservas sin parámetros (menú): vuelve a la vista normal.
+      setFiltro('hoy');
     }
+    primeraLectura.current = false;
     setListo(true);
-  }, []);
+  }, [params]);
 
   useEffect(() => {
     if (listo) loadReservas();
@@ -62,6 +75,55 @@ export default function AdminReservasPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const [reenviando, setReenviando] = useState<string | null>(null);
+  const [errorMail, setErrorMail] = useState<{ id: string; texto: string } | null>(null);
+
+  const handleReenviar = async (id: string) => {
+    setReenviando(id);
+    setErrorMail(null);
+    try {
+      const res = await fetch(`/api/admin/reservas/${id}/reenviar-mail`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok !== true) {
+        setErrorMail({ id, texto: data.error || 'No se pudo reenviar el mail.' });
+      }
+      await loadReservas();
+    } finally {
+      setReenviando(null);
+    }
+  };
+
+  // Cuando el avisador detecta una reserva nueva, la lista se actualiza sola.
+  useEffect(() => {
+    if (!listo) return;
+    const alCambiar = () => loadReservas();
+    window.addEventListener(EVENTO_RESERVAS_CAMBIARON, alCambiar);
+    return () => window.removeEventListener(EVENTO_RESERVAS_CAMBIARON, alCambiar);
+  }, [listo, filtro, fechaFiltro]);
+
+  const estadoMail = (r: Reservation) => {
+    if (r.estado !== 'confirmada' || r.email.includes('sin-email.union') || !r.emailEstado) return null;
+    if (r.emailEstado === 'enviado') {
+      return <div className="text-green-700">✉ Mail de confirmación enviado</div>;
+    }
+    if (r.emailEstado === 'fallido') {
+      return (
+        <div className="col-span-2 flex flex-wrap items-center gap-2 text-red-700">
+          <span>✉ El mail no salió{r.emailError ? `: ${r.emailError}` : ''}</span>
+          <button
+            onClick={() => handleReenviar(r.id)}
+            disabled={reenviando === r.id}
+            className="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+          >
+            {reenviando === r.id ? 'Enviando…' : 'Reenviar'}
+          </button>
+          {errorMail?.id === r.id && <span className="text-xs font-semibold">{errorMail.texto}</span>}
+        </div>
+      );
+    }
+    return null;
   };
 
   const handleCancel = async (id: string) => {
@@ -114,6 +176,7 @@ export default function AdminReservasPage() {
                     { value: 'manana', label: 'Mañana' },
                     { value: 'todas', label: 'Todas' },
                     { value: 'fecha', label: 'Fecha específica' },
+                    { value: 'sinmail', label: '✉ Sin mail' },
                   ] as const
                 ).map((f) => (
                   <button key={f.value} onClick={() => setFiltro(f.value)}
@@ -181,6 +244,7 @@ export default function AdminReservasPage() {
                           </h3>
                           <div className="grid sm:grid-cols-2 gap-1.5 mt-2 text-sm font-body text-brasa-900/60">
                             <div>📧 {reserva.email.includes('sin-email.union') ? '—' : reserva.email}</div>
+                            {estadoMail(reserva)}
                             <div>📱 {reserva.telefono || '—'}</div>
                             <div>👥 {reserva.personas} personas</div>
                             <div>{reserva.ubicacion === UBICACIONES.VEREDA ? '☀️ Terraza' : '🏠 Adentro'}</div>

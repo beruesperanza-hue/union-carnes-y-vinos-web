@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createReservation } from '@/app/actions/reservations';
-import { UBICACIONES } from '@/lib/constants';
+import { NEGOCIO, UBICACIONES, UBICACIONES_LABEL } from '@/lib/constants';
 import { formatearFechaLarga, hoyEnES, sumarDias } from '@/lib/fechas';
 
 interface AvailableSlot {
@@ -18,6 +18,7 @@ export default function ReservationForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [emailEnviado, setEmailEnviado] = useState<boolean | null>(null);
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -87,22 +88,8 @@ export default function ReservationForm() {
 
       if (response.success) {
         setSuccess(true);
+        setEmailEnviado(response.emailEnviado ?? null);
         setStep('confirmacion');
-        setTimeout(() => {
-          setFormData({
-            nombre: '',
-            apellido: '',
-            email: '',
-            telefono: '',
-            personas: '2',
-            fecha: '',
-            hora: '',
-            ubicacion: UBICACIONES.ADENTRO as string,
-            comentarios: '',
-          });
-          setStep('fecha');
-          setSuccess(false);
-        }, 6000);
       } else {
         setError(response.error || 'Error al crear la reserva');
         // El cupo pudo agotarse mientras completaba el form: refrescamos.
@@ -115,6 +102,25 @@ export default function ReservationForm() {
     }
   };
 
+  const reiniciar = () => {
+    setFormData({
+      nombre: '',
+      apellido: '',
+      email: '',
+      telefono: '',
+      personas: '2',
+      fecha: '',
+      hora: '',
+      ubicacion: UBICACIONES.ADENTRO as string,
+      comentarios: '',
+    });
+    setAvailableSlots([]);
+    setStep('fecha');
+    setSuccess(false);
+    setEmailEnviado(null);
+    setError(null);
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -125,17 +131,59 @@ export default function ReservationForm() {
   const today = hoyEnES();
   const maxDateStr = sumarDias(today, 60);
 
+  if (step === 'confirmacion' && success) {
+    const ubicacionLabel = UBICACIONES_LABEL[formData.ubicacion] || UBICACIONES_LABEL[UBICACIONES.ADENTRO];
+    return (
+      <div className="w-full rounded-2xl border border-brasa-200 bg-white p-6 text-center sm:p-8">
+        <div className="text-4xl" aria-hidden="true">✅</div>
+        <h2 className="mt-3 font-display text-3xl uppercase text-brasa-900">¡Reserva confirmada!</h2>
+        <p className="mt-1 font-body text-brasa-900/60">Te esperamos, {formData.nombre}.</p>
+
+        <dl className="mx-auto mt-6 max-w-sm divide-y divide-brasa-100 text-left font-body">
+          {[
+            ['Fecha', formatearFechaLarga(formData.fecha)],
+            ['Hora', formData.hora],
+            ['Personas', String(formData.personas)],
+            ['Mesa', ubicacionLabel],
+          ].map(([k, v]) => (
+            <div key={k} className="flex items-baseline justify-between gap-4 py-2.5">
+              <dt className="text-sm text-brasa-900/55">{k}</dt>
+              <dd className="font-semibold first-letter:uppercase text-brasa-900">{v}</dd>
+            </div>
+          ))}
+        </dl>
+
+        {emailEnviado === false ? (
+          <div className="mx-auto mt-6 max-w-sm rounded-lg border border-amber-300 bg-amber-50 p-4 text-left font-body text-sm text-amber-900">
+            <p>
+              <strong>No pudimos enviarte el mail de confirmación ahora.</strong> Tu reserva está
+              confirmada igual: guardá estos datos.
+            </p>
+            <a
+              href={NEGOCIO.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block font-semibold underline"
+            >
+              Escribinos por WhatsApp si lo necesitás →
+            </a>
+          </div>
+        ) : (
+          <p className="mx-auto mt-6 max-w-sm font-body text-sm text-brasa-900/70">
+            Te enviamos la confirmación a <strong>{formData.email}</strong>. Si no la ves en unos
+            minutos, revisá la carpeta de spam.
+          </p>
+        )}
+
+        <button type="button" onClick={reiniciar} className="btn btn-line mt-7">
+          Hacer otra reserva
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex gap-3">
-          <span className="text-2xl flex-shrink-0 mt-0.5">✅</span>
-          <div>
-            <h3 className="font-body font-semibold text-green-900">¡Reserva confirmada!</h3>
-            <p className="font-body text-green-700 text-sm">Te enviamos un email de confirmación.</p>
-          </div>
-        </div>
-      )}
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
@@ -172,7 +220,7 @@ export default function ReservationForm() {
           <div className="space-y-4">
             <h3 className="font-display uppercase text-xl text-brasa-900">📅 Elegí una fecha</h3>
             <p className="font-body text-sm text-brasa-900/60">
-              Abrimos jueves, viernes, sábado y domingo — el resto de los días no vas a ver horarios.
+              Abrimos lunes, jueves, viernes y sábado — el resto de los días no vas a ver horarios.
             </p>
 
             <div>
@@ -193,7 +241,7 @@ export default function ReservationForm() {
               <div className="p-4 bg-brasa-100 rounded-lg text-center font-body text-brasa-900/70 text-sm">
                 {cerradoDia
                   ? 'Ese día estamos cerrados. Elegí otra fecha.'
-                  : 'Ese día no abrimos. Elegí jueves, viernes, sábado o domingo.'}
+                  : 'Ese día no abrimos. Elegí lunes, jueves, viernes o sábado.'}
               </div>
             )}
 

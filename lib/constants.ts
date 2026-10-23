@@ -33,25 +33,27 @@ export const NEGOCIO = {
     encodeURIComponent('Hola! Quería consultar por una reserva en Unión Carnes y Vinos.'),
   mapsUrl:
     'https://www.google.com/maps/dir/?api=1&destination=Carrer+de+Puerto+Rico+38%2C+46006+Valencia',
-  theforkUrl: 'https://www.thefork.es/restaurante/union-carnes-y-vinos-r543885',
   instagramUrl: 'https://www.instagram.com/union_carnesyvinos/',
   instagramUser: '@union_carnesyvinos',
   tripadvisorUrl:
     'https://www.tripadvisor.com/Restaurant_Review-g187529-d18901675-Reviews-Union_Carnes_Y_Vinos-Valencia_Province_of_Valencia_Valencian_Community.html',
 
-  // Horario real (corregido jul-2026): cenas de jueves a domingo, mismo horario los 4 días.
+  // Horario vigente desde oct-2026. Los turnos reservables salen de la tabla
+  // Schedule (Configuración); esto es lo que se muestra al público y en schema.org.
   horario: [
-    { dia: 'Lunes', horas: 'Cerrado' },
+    { dia: 'Lunes', horas: '19:30–23:00' },
     { dia: 'Martes', horas: 'Cerrado' },
     { dia: 'Miércoles', horas: 'Cerrado' },
-    { dia: 'Jueves', horas: '19:30–23:30' },
-    { dia: 'Viernes', horas: '19:30–23:30' },
-    { dia: 'Sábado', horas: '19:30–23:30' },
-    { dia: 'Domingo', horas: '19:30–23:30' },
+    { dia: 'Jueves', horas: '19:30–23:00' },
+    { dia: 'Viernes', horas: '19:30–23:00' },
+    { dia: 'Sábado', horas: '14:00–16:00 · 19:30–23:30' },
+    { dia: 'Domingo', horas: 'Cerrado' },
   ],
   // Formato schema.org openingHoursSpecification (día ISO corto).
   horarioSchema: [
-    { dias: ['Thursday', 'Friday', 'Saturday', 'Sunday'], abre: '19:30', cierra: '23:30' },
+    { dias: ['Monday', 'Thursday', 'Friday'], abre: '19:30', cierra: '23:00' },
+    { dias: ['Saturday'], abre: '14:00', cierra: '16:00' },
+    { dias: ['Saturday'], abre: '19:30', cierra: '23:30' },
   ],
 
   precioMedio: '20 €',

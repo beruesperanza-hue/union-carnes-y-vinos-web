@@ -1,9 +1,11 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { sendReservationConfirmation, sendReservationCancellation } from '@/lib/email';
+import { sendReservationCancellation, esEmailValido } from '@/lib/email';
+import { enviarConfirmacionDeReserva } from '@/lib/reservas-mail';
+import { validarReservaPublica } from '@/lib/reservas-validacion';
 import { MENSAJES, ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
-import { esTurnoPasado, fechaISOaDate, formatearFechaLarga } from '@/lib/fechas';
+import { esTurnoPasado, fechaISOaDate } from '@/lib/fechas';
 import { cierresDeFecha, diaCerradoCompleto, estadoCierreTurno } from '@/lib/cierres';
 import { turnosDeFecha } from '@/lib/turnos';
 import { revalidatePath } from 'next/cache';
@@ -21,8 +23,18 @@ interface CreateReservationData {
   comentarios?: string;
 }
 
-export async function createReservation(data: CreateReservationData) {
+export async function createReservation(entrada: CreateReservationData) {
   try {
+    // Esto es un endpoint público: se valida y normaliza todo acá, no se confía en el formulario.
+    const validada = validarReservaPublica(entrada);
+    if (!validada.ok) {
+      return { success: false, error: validada.error };
+    }
+    const data = {
+      ...validada.datos,
+      ubicacion: entrada.ubicacion,
+    };
+
     // El turno se compara contra la hora de Valencia, no la del servidor.
     if (esTurnoPasado(data.fecha, data.hora)) {
       return { success: false, error: MENSAJES.TURNO_PASADO };
@@ -94,20 +106,15 @@ export async function createReservation(data: CreateReservationData) {
         fecha,
         hora: data.hora,
         ubicacion,
-        comentarios: data.comentarios || null,
+        comentarios: data.comentarios,
         estado: ESTADOS_RESERVA.CONFIRMADA,
+        origen: 'web',
       },
     });
 
-    await sendReservationConfirmation(
-      data.email,
-      data.nombre,
-      formatearFechaLarga(data.fecha),
-      data.hora,
-      data.personas,
-      data.telefono,
-      ubicacion
-    );
+    // El resultado se guarda en la reserva: si falla, el panel lo muestra y se puede reenviar.
+    // Mientras tanto la reserva ya está tomada: un problema de mail nunca la cancela.
+    const { resultado } = await enviarConfirmacionDeReserva(reservation);
 
     revalidatePath('/admin');
     revalidatePath('/reservar');
@@ -116,8 +123,13 @@ export async function createReservation(data: CreateReservationData) {
       success: true,
       message: MENSAJES.RESERVA_EXITOSA,
       reservationId: reservation.id,
+      emailEnviado: resultado.ok,
     };
-  } catch (error) {
+  } catch (error: any) {
+    // Doble clic o reintento: la restricción única (fecha+hora+email) ya frenó el duplicado.
+    if (error?.code === 'P2002') {
+      return { success: false, error: MENSAJES.RESERVA_DUPLICADA };
+    }
     console.error('Error creating reservation:', error);
     return { success: false, error: MENSAJES.ERROR_GENERICO };
   }
@@ -207,6 +219,8 @@ interface CreateReservationAdminData {
   hora: string;
   ubicacion?: string;
   comentarios?: string;
+  /** Quién la carga: 'admin' (panel, por defecto) o 'bot'. Estas no disparan aviso en pantallas. */
+  origen?: 'admin' | 'bot';
 }
 
 /**
@@ -221,9 +235,13 @@ export async function createReservationAdmin(data: CreateReservationAdminData) {
     const ubicacion =
       data.ubicacion === UBICACIONES.VEREDA ? UBICACIONES.VEREDA : UBICACIONES.ADENTRO;
     const tieneEmail = !!data.email && data.email.trim().length > 0;
+    if (tieneEmail && !esEmailValido(data.email!.trim())) {
+      return { success: false, error: 'El email no parece válido.' };
+    }
     const email = tieneEmail
-      ? data.email!.trim()
+      ? data.email!.trim().toLowerCase()
       : `walkin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@sin-email.union`;
+    const origen = data.origen === 'bot' ? 'bot' : 'admin';
 
     const reservation = await prisma.reservation.create({
       data: {
@@ -237,23 +255,21 @@ export async function createReservationAdmin(data: CreateReservationAdminData) {
         ubicacion,
         comentarios: data.comentarios || null,
         estado: ESTADOS_RESERVA.CONFIRMADA,
+        origen,
       },
     });
 
-    if (tieneEmail) {
-      await sendReservationConfirmation(
-        email,
-        data.nombre,
-        formatearFechaLarga(data.fecha),
-        data.hora,
-        data.personas,
-        data.telefono,
-        ubicacion
-      );
-    }
+    // También registra el resultado; sin email real queda como 'sin-email'.
+    const { resultado } = await enviarConfirmacionDeReserva(reservation);
 
     revalidatePath('/admin');
-    return { success: true, message: 'Reserva cargada', reservationId: reservation.id };
+    return {
+      success: true,
+      message: 'Reserva cargada',
+      reservationId: reservation.id,
+      emailEnviado: resultado.omitido ? null : resultado.ok,
+      emailError: !resultado.ok ? resultado.error : undefined,
+    };
   } catch (error: any) {
     if (error?.code === 'P2002') {
       return { success: false, error: MENSAJES.RESERVA_DUPLICADA };

@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { execSync } = require('child_process');
+const { aplicarHorarios } = require('./horarios-2026-10');
 
 const prisma = new PrismaClient();
 
@@ -18,6 +19,9 @@ async function checkAndSeed() {
     } else {
       console.log('✅ BD ya está poblada');
     }
+
+    // Cambio de horarios oct-2026: se aplica una sola vez (ver horarios-2026-10.js).
+    await aplicarHorarios(prisma);
   } catch (error) {
     console.error('❌ Error:', error.message);
   } finally {
