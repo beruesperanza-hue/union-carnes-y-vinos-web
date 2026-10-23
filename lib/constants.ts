@@ -25,6 +25,8 @@ export const NEGOCIO = {
   telefonoDisplay: '+34 619 24 04 02',
   email: 'hola@unioncarnesyvinos.com',
   emailLegacy: 'barunionruzafa@gmail.com',
+  // Casilla del local: acá llega el aviso "ENTRÓ NUEVA RESERVA" (se puede cambiar con EMAIL_AVISOS).
+  emailAvisos: process.env.EMAIL_AVISOS || 'barunionruzafa@gmail.com',
 
   sitio: process.env.NEXT_PUBLIC_SITE_URL || 'https://unioncarnesyvinos.com',
 

@@ -357,6 +357,67 @@ export async function sendReservationConfirmation(
   );
 }
 
+export interface ReservaParaAviso {
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono: string;
+  personas: number;
+  fecha: string;
+  hora: string;
+  ubicacion: string;
+  comentarios?: string | null;
+  origen: string;
+}
+
+/** Aviso interno al local: entró una reserva nueva (web o bot). */
+export async function sendNewReservationAlert(r: ReservaParaAviso): Promise<ResultadoMail> {
+  const ubicacionLabel = UBICACIONES_LABEL[r.ubicacion] || UBICACIONES_LABEL[UBICACIONES.ADENTRO];
+  const cliente = `${r.nombre} ${r.apellido}`.trim();
+  const sinEmailReal = r.email.includes('sin-email.union');
+  const origenLabel = r.origen === 'bot' ? 'asistente de Telegram' : 'la web';
+
+  const fila = (label: string, valor: string) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #F3E7CE;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#8a7a63;">${label}</td>
+      <td align="right" style="padding:10px 0;border-bottom:1px solid #F3E7CE;font-family:Helvetica,Arial,sans-serif;font-size:16px;color:#17130F;font-weight:bold;">${valor}</td>
+    </tr>`;
+
+  const contenido = `
+    <p style="margin:0 0 24px 0;">Entró una reserva desde ${origenLabel}:</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+      ${fila('Cliente', esc(cliente))}
+      ${fila('Fecha', esc(r.fecha))}
+      ${fila('Hora', esc(r.hora))}
+      ${fila('Personas', String(r.personas))}
+      ${fila('Mesa', ubicacionLabel)}
+      ${fila('Teléfono', esc(r.telefono))}
+      ${sinEmailReal ? '' : fila('Email', esc(r.email))}
+      ${r.comentarios ? fila('Comentarios', esc(r.comentarios)) : ''}
+    </table>
+  `;
+
+  const texto = [
+    `Entró una reserva desde ${origenLabel}:`,
+    '',
+    `Cliente: ${cliente}`,
+    `Fecha: ${r.fecha}`,
+    `Hora: ${r.hora}`,
+    `Personas: ${r.personas}`,
+    `Mesa: ${ubicacionLabel}`,
+    `Teléfono: ${r.telefono}`,
+    ...(sinEmailReal ? [] : [`Email: ${r.email}`]),
+    ...(r.comentarios ? [`Comentarios: ${r.comentarios}`] : []),
+  ].join('\n');
+
+  return enviarMail(
+    NEGOCIO.emailAvisos,
+    `ENTRÓ NUEVA RESERVA: ${r.fecha}, ${r.hora} · ${r.personas} pers. · ${cliente}`.replace(/[\r\n]+/g, ' '),
+    layout(esc(`Nueva reserva de ${cliente} para el ${r.fecha} a las ${r.hora}.`), 'Entró nueva reserva', contenido),
+    texto
+  );
+}
+
 export async function sendReservationCancellation(email: string, nombre?: string): Promise<ResultadoMail> {
   const saludo = nombre ? `Hola <strong>${esc(nombre)}</strong>,` : 'Hola,';
 

@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/db';
 import { sendReservationCancellation, esEmailValido } from '@/lib/email';
-import { enviarConfirmacionDeReserva } from '@/lib/reservas-mail';
+import { enviarConfirmacionDeReserva, avisarReservaNueva } from '@/lib/reservas-mail';
 import { validarReservaPublica } from '@/lib/reservas-validacion';
 import { MENSAJES, ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
 import { esTurnoPasado, fechaISOaDate } from '@/lib/fechas';
@@ -114,7 +114,11 @@ export async function createReservation(entrada: CreateReservationData) {
 
     // El resultado se guarda en la reserva: si falla, el panel lo muestra y se puede reenviar.
     // Mientras tanto la reserva ya está tomada: un problema de mail nunca la cancela.
-    const { resultado } = await enviarConfirmacionDeReserva(reservation);
+    // El aviso al local sale en paralelo para no sumar espera al cliente.
+    const [{ resultado }] = await Promise.all([
+      enviarConfirmacionDeReserva(reservation),
+      avisarReservaNueva(reservation),
+    ]);
 
     revalidatePath('/admin');
     revalidatePath('/reservar');
@@ -260,7 +264,11 @@ export async function createReservationAdmin(data: CreateReservationAdminData) {
     });
 
     // También registra el resultado; sin email real queda como 'sin-email'.
-    const { resultado } = await enviarConfirmacionDeReserva(reservation);
+    // Solo las reservas que entran solas (bot) avisan al local; las cargadas a mano en el panel no.
+    const [{ resultado }] = await Promise.all([
+      enviarConfirmacionDeReserva(reservation),
+      origen === 'bot' ? avisarReservaNueva(reservation) : Promise.resolve(),
+    ]);
 
     revalidatePath('/admin');
     return {

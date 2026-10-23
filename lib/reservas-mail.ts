@@ -3,7 +3,7 @@
 // y el botón "Reenviar" del admin, para que el estado siempre quede guardado.
 
 import prisma from '@/lib/db';
-import { sendReservationConfirmation, type ResultadoMail } from '@/lib/email';
+import { sendReservationConfirmation, sendNewReservationAlert, type ResultadoMail } from '@/lib/email';
 import { dateAFechaISO, formatearFechaLarga } from '@/lib/fechas';
 
 export type EmailEstado = 'enviado' | 'fallido' | 'sin-email';
@@ -48,4 +48,26 @@ export async function enviarConfirmacionDeReserva(
   }
 
   return { resultado, emailEstado };
+}
+
+interface ReservaParaAviso extends ReservaParaMail {
+  apellido: string;
+  comentarios: string | null;
+  origen: string;
+}
+
+/**
+ * Avisa al local (mail "ENTRÓ NUEVA RESERVA"). Nunca lanza: si el aviso falla,
+ * la reserva y la confirmación al cliente no se ven afectadas.
+ */
+export async function avisarReservaNueva(r: ReservaParaAviso): Promise<void> {
+  try {
+    const res = await sendNewReservationAlert({
+      ...r,
+      fecha: formatearFechaLarga(dateAFechaISO(r.fecha)),
+    });
+    if (!res.ok) console.error('No se pudo enviar el aviso de reserva nueva:', res.error);
+  } catch (error) {
+    console.error('No se pudo enviar el aviso de reserva nueva:', error);
+  }
 }
