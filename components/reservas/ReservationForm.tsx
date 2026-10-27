@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createReservation } from '@/app/actions/reservations';
-import { NEGOCIO, UBICACIONES, UBICACIONES_LABEL } from '@/lib/constants';
+import { MAX_PERSONAS_AUTOMATICA, NEGOCIO, UBICACIONES, UBICACIONES_LABEL } from '@/lib/constants';
 import { formatearFechaLarga, hoyEnES, sumarDias } from '@/lib/fechas';
 
 interface AvailableSlot {
@@ -19,6 +19,8 @@ export default function ReservationForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [emailEnviado, setEmailEnviado] = useState<boolean | null>(null);
+  // Grupo grande: la reserva queda pendiente hasta que el local la confirme.
+  const [pendiente, setPendiente] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -89,6 +91,7 @@ export default function ReservationForm() {
       if (response.success) {
         setSuccess(true);
         setEmailEnviado(response.emailEnviado ?? null);
+        setPendiente(response.pendiente === true);
         setStep('confirmacion');
       } else {
         setError(response.error || 'Error al crear la reserva');
@@ -118,6 +121,7 @@ export default function ReservationForm() {
     setStep('fecha');
     setSuccess(false);
     setEmailEnviado(null);
+    setPendiente(false);
     setError(null);
   };
 
@@ -128,6 +132,7 @@ export default function ReservationForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const esGrupo = parseInt(formData.personas) > MAX_PERSONAS_AUTOMATICA;
   const today = hoyEnES();
   const maxDateStr = sumarDias(today, 60);
 
@@ -135,9 +140,15 @@ export default function ReservationForm() {
     const ubicacionLabel = UBICACIONES_LABEL[formData.ubicacion] || UBICACIONES_LABEL[UBICACIONES.ADENTRO];
     return (
       <div className="w-full rounded-2xl border border-brasa-200 bg-white p-6 text-center sm:p-8">
-        <div className="text-4xl" aria-hidden="true">✅</div>
-        <h2 className="mt-3 font-display text-3xl uppercase text-brasa-900">¡Reserva confirmada!</h2>
-        <p className="mt-1 font-body text-brasa-900/60">Te esperamos, {formData.nombre}.</p>
+        <div className="text-4xl" aria-hidden="true">{pendiente ? '⏳' : '✅'}</div>
+        <h2 className="mt-3 font-display text-3xl uppercase text-brasa-900">
+          {pendiente ? 'Solicitud recibida' : '¡Reserva confirmada!'}
+        </h2>
+        <p className="mt-1 font-body text-brasa-900/60">
+          {pendiente
+            ? `Gracias, ${formData.nombre}. Por ser un grupo grande, la confirmamos nosotros.`
+            : `Te esperamos, ${formData.nombre}.`}
+        </p>
 
         <dl className="mx-auto mt-6 max-w-sm divide-y divide-brasa-100 text-left font-body">
           {[
@@ -153,11 +164,20 @@ export default function ReservationForm() {
           ))}
         </dl>
 
+        {pendiente && (
+          <p className="mx-auto mt-6 max-w-sm rounded-lg bg-brasa-50 p-4 font-body text-sm text-brasa-900">
+            <strong>Todavía no es una reserva confirmada.</strong> Te escribimos a la brevedad para
+            confirmarla. Si necesitás respuesta urgente, escribinos por WhatsApp.
+          </p>
+        )}
+
         {emailEnviado === false ? (
           <div className="mx-auto mt-6 max-w-sm rounded-lg border border-amber-300 bg-amber-50 p-4 text-left font-body text-sm text-amber-900">
             <p>
-              <strong>No pudimos enviarte el mail de confirmación ahora.</strong> Tu reserva está
-              confirmada igual: guardá estos datos.
+              <strong>No pudimos enviarte el mail ahora.</strong>{' '}
+              {pendiente
+                ? 'Tu solicitud llegó igual: te vamos a contactar. Guardá estos datos.'
+                : 'Tu reserva está confirmada igual: guardá estos datos.'}
             </p>
             <a
               href={NEGOCIO.whatsappUrl}
@@ -170,8 +190,8 @@ export default function ReservationForm() {
           </div>
         ) : (
           <p className="mx-auto mt-6 max-w-sm font-body text-sm text-brasa-900/70">
-            Te enviamos la confirmación a <strong>{formData.email}</strong>. Si no la ves en unos
-            minutos, revisá la carpeta de spam.
+            {pendiente ? 'Te enviamos el aviso de la solicitud a' : 'Te enviamos la confirmación a'}{' '}
+            <strong>{formData.email}</strong>. Si no lo ves en unos minutos, revisá la carpeta de spam.
           </p>
         )}
 
@@ -276,6 +296,12 @@ export default function ReservationForm() {
                   </option>
                 ))}
               </select>
+              {esGrupo && (
+                <p className="mt-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 font-body text-xs text-amber-900">
+                  Para grupos de más de {MAX_PERSONAS_AUTOMATICA} personas <strong>la reserva la confirmamos nosotros</strong>:
+                  te avisamos por mail a la brevedad.
+                </p>
+              )}
             </div>
 
             {loadingSlots ? (
@@ -419,7 +445,7 @@ export default function ReservationForm() {
                 Atrás
               </button>
               <button type="submit" disabled={loading} className="btn btn-ember flex-1">
-                {loading ? 'Confirmando...' : 'Confirmar reserva'}
+                {loading ? 'Enviando...' : esGrupo ? 'Enviar solicitud' : 'Confirmar reserva'}
               </button>
             </div>
           </div>

@@ -29,6 +29,11 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    // Grupos grandes esperando que el local los confirme (de hoy en adelante).
+    if (filtro === 'pendientes') {
+      whereClause = { estado: 'pendiente', fecha: { gte: fechaISOaDate(hoyEnES()) } };
+    }
+
     // "Hoy" es hoy en Valencia, no en la zona horaria del servidor.
     let diaISO: string | null = null;
     if (filtro === 'hoy') {

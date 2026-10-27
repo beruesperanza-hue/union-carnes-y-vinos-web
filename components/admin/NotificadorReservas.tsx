@@ -28,6 +28,7 @@ interface Reserva {
   hora: string;
   ubicacion: string;
   comentarios: string | null;
+  estado?: string;
   emailEstado: string | null;
   emailError: string | null;
   creadaEn: string;
@@ -79,6 +80,7 @@ export default function NotificadorReservas() {
 
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [sinMail, setSinMail] = useState(0);
+  const [porConfirmar, setPorConfirmar] = useState(0);
   const [sonido, setSonido] = useState(true);
   const [audioListo, setAudioListo] = useState(false);
   const [verTodos, setVerTodos] = useState(false);
@@ -184,10 +186,12 @@ export default function NotificadorReservas() {
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-        const data: { ahora: string; sinMail: number; reservas: Reserva[] } = await res.json();
+        const data: { ahora: string; sinMail: number; porConfirmar?: number; reservas: Reserva[] } =
+          await res.json();
         if (cancelado) return;
 
         setSinMail(data.sinMail);
+        setPorConfirmar(data.porConfirmar ?? 0);
         const nuevas = data.reservas.filter((r) => !vistos.current.has(r.id));
         if (nuevas.length > 0) {
           nuevas.forEach((r) => vistos.current.add(r.id));
@@ -312,6 +316,17 @@ export default function NotificadorReservas() {
         className="pointer-events-none fixed inset-x-3 bottom-3 z-[70] flex flex-col items-stretch gap-3 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-[390px]"
         aria-live="polite"
       >
+        {porConfirmar > 0 && (
+          <Link
+            href="/admin/reservas?filtro=pendientes"
+            className="pointer-events-auto rounded-xl border border-ember-500 bg-ember-500 px-4 py-3 font-body text-sm text-white shadow-lg hover:bg-ember-600"
+          >
+            <strong>⏳ {porConfirmar}</strong>{' '}
+            {porConfirmar === 1 ? 'reserva de grupo espera' : 'reservas de grupo esperan'} tu confirmación.{' '}
+            <span className="underline">Confirmar →</span>
+          </Link>
+        )}
+
         {sinMail > 0 && (
           <Link
             href="/admin/reservas?filtro=sinmail"
@@ -336,6 +351,7 @@ export default function NotificadorReservas() {
           const esHoy = a.fecha === hoy;
           const fechaTexto = esHoy ? 'Hoy' : formatearFechaLarga(a.fecha);
           const mailFallo = a.emailEstado === 'fallido';
+          const porConfirmarEsta = a.estado === 'pendiente';
           return (
             <article
               key={a.id}
@@ -344,7 +360,7 @@ export default function NotificadorReservas() {
               <div className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ember-600">
-                    🔔 Nueva reserva · {haceCuanto(a.creadaEn)}
+                    {porConfirmarEsta ? '⏳ Grupo por confirmar' : '🔔 Nueva reserva'} · {haceCuanto(a.creadaEn)}
                   </p>
                   <button
                     onClick={() => descartar(a.id)}
@@ -374,11 +390,11 @@ export default function NotificadorReservas() {
                 >
                   {mailFallo ? (
                     <>
-                      ⚠ <strong>El mail de confirmación no salió.</strong>{' '}
-                      {a.emailError ? `${a.emailError} ` : ''}Avisale por WhatsApp o reintentá.
+                      ⚠ <strong>{porConfirmarEsta ? 'El mail de "solicitud recibida" no salió.' : 'El mail de confirmación no salió.'}</strong>{' '}
+                      {a.emailError ? `${a.emailError} ` : ''}Avisale por WhatsApp{porConfirmarEsta ? '.' : ' o reintentá.'}
                     </>
                   ) : a.emailEstado === 'enviado' ? (
-                    <>✉ Confirmación enviada por mail.</>
+                    <>{porConfirmarEsta ? '✉ Se le avisó que la confirmamos nosotros. Todavía no está confirmada.' : '✉ Confirmación enviada por mail.'}</>
                   ) : (
                     <>✉ Estado del mail sin confirmar.</>
                   )}
@@ -401,7 +417,16 @@ export default function NotificadorReservas() {
                   >
                     Ver el día
                   </Link>
-                  {mailFallo && (
+                  {porConfirmarEsta && (
+                    <Link
+                      href="/admin/reservas?filtro=pendientes"
+                      onClick={() => descartar(a.id)}
+                      className="rounded-lg bg-green-600 px-3 py-2 font-body text-sm font-semibold text-white hover:bg-green-700"
+                    >
+                      Confirmar / rechazar
+                    </Link>
+                  )}
+                  {mailFallo && !porConfirmarEsta && (
                     <button
                       disabled={a.reenviando}
                       onClick={() => reenviar(a.id)}

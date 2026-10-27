@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { ESTADOS_RESERVA } from '@/lib/constants';
+import { ESTADOS_RESERVA, ESTADOS_OCUPAN_MESA } from '@/lib/constants';
 import { dateAFechaISO, fechaISOaDate, hoyEnES } from '@/lib/fechas';
 import { exigirAdminApi } from '@/lib/admin-guard';
 
@@ -24,6 +24,7 @@ const ESPERA_MAIL_MS = 30_000;
  * consultan cada pocos segundos. Sin `desde` solo devuelve la hora del servidor
  * para arrancar el cursor (no avisa de reservas viejas).
  *
+ * `porConfirmar` = grupos grandes pendientes de confirmación (de hoy en adelante).
  * `sinMail` = cuántas reservas vigentes (de hoy en adelante, de cualquier origen)
  * no pudieron recibir su confirmación por mail. Es el mismo criterio que el
  * filtro "Sin mail" de la lista de reservas, para que el aviso y la lista
@@ -48,12 +49,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const [filas, sinMail] = await Promise.all([
+    const [filas, sinMail, porConfirmar] = await Promise.all([
       desde
         ? prisma.reservation.findMany({
             where: {
               origen: 'web',
-              estado: ESTADOS_RESERVA.CONFIRMADA,
+              estado: { in: ESTADOS_OCUPAN_MESA },
               createdAt: { gt: desde },
               OR: [
                 { emailEstado: { not: null } },
@@ -72,11 +73,16 @@ export async function GET(request: NextRequest) {
           fecha: { gte: fechaISOaDate(hoyEnES()) },
         },
       }),
+      // Grupos grandes que el local todavía tiene que confirmar o rechazar.
+      prisma.reservation.count({
+        where: { estado: ESTADOS_RESERVA.PENDIENTE, fecha: { gte: fechaISOaDate(hoyEnES()) } },
+      }),
     ]);
 
     return NextResponse.json({
       ahora: ahora.toISOString(),
       sinMail,
+      porConfirmar,
       reservas: [...filas].reverse().map((r) => ({
         id: r.id,
         nombre: r.nombre,
@@ -87,6 +93,7 @@ export async function GET(request: NextRequest) {
         hora: r.hora,
         ubicacion: r.ubicacion,
         comentarios: r.comentarios,
+        estado: r.estado,
         emailEstado: r.emailEstado,
         emailError: r.emailError,
         creadaEn: r.createdAt.toISOString(),

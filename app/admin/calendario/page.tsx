@@ -55,6 +55,7 @@ interface ReservaDia {
   hora: string;
   ubicacion: string;
   comentarios: string | null;
+  estado?: string;
 }
 
 interface DetalleDia {
@@ -861,7 +862,7 @@ export default function CalendarioPage() {
                       </Link>
                     </div>
                     {detalle.reservas.length === 0 ? (
-                      <p className="font-body text-sm text-brasa-900/45">Sin reservas confirmadas.</p>
+                      <p className="font-body text-sm text-brasa-900/45">Sin reservas.</p>
                     ) : (
                       <ul className="divide-y divide-brasa-100 rounded-lg border border-brasa-200">
                         {detalle.reservas.map((r) => (
@@ -869,6 +870,11 @@ export default function CalendarioPage() {
                             <div className="min-w-0">
                               <p className="font-body text-sm font-semibold text-brasa-900 truncate">
                                 {r.nombre} {r.apellido}
+                                {r.estado === 'pendiente' && (
+                                  <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-800">
+                                    Por confirmar
+                                  </span>
+                                )}
                               </p>
                               <p className="font-body text-xs text-brasa-900/55">
                                 {r.hora} · {r.ubicacion === 'vereda' ? '☀️ Terraza' : '🏠 Adentro'}

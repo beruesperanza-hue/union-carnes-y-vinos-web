@@ -3,7 +3,12 @@
 // y el botón "Reenviar" del admin, para que el estado siempre quede guardado.
 
 import prisma from '@/lib/db';
-import { sendReservationConfirmation, sendNewReservationAlert, type ResultadoMail } from '@/lib/email';
+import {
+  sendReservationConfirmation,
+  sendReservationRequestReceived,
+  sendNewReservationAlert,
+  type ResultadoMail,
+} from '@/lib/email';
 import { dateAFechaISO, formatearFechaLarga } from '@/lib/fechas';
 
 export type EmailEstado = 'enviado' | 'fallido' | 'sin-email';
@@ -19,10 +24,16 @@ interface ReservaParaMail {
   ubicacion: string;
 }
 
+/**
+ * Manda al cliente el mail que corresponde y guarda el resultado en la reserva.
+ * `solicitud` = grupo grande pendiente: "recibimos tu solicitud" en vez de "confirmada".
+ */
 export async function enviarConfirmacionDeReserva(
-  r: ReservaParaMail
+  r: ReservaParaMail,
+  opciones: { solicitud?: boolean } = {}
 ): Promise<{ resultado: ResultadoMail; emailEstado: EmailEstado }> {
-  const resultado = await sendReservationConfirmation(
+  const enviar = opciones.solicitud ? sendReservationRequestReceived : sendReservationConfirmation;
+  const resultado = await enviar(
     r.email,
     r.nombre,
     formatearFechaLarga(dateAFechaISO(r.fecha)),
@@ -54,6 +65,8 @@ interface ReservaParaAviso extends ReservaParaMail {
   apellido: string;
   comentarios: string | null;
   origen: string;
+  /** true = grupo grande pendiente de confirmar. */
+  pendiente?: boolean;
 }
 
 /**

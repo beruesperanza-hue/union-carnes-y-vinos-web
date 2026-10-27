@@ -27,7 +27,7 @@ interface Reservation {
 
 export default function AdminReservasPage() {
   const [reservas, setReservas] = useState<Reservation[]>([]);
-  const [filtro, setFiltro] = useState<'hoy' | 'manana' | 'todas' | 'fecha' | 'sinmail'>('hoy');
+  const [filtro, setFiltro] = useState<'hoy' | 'manana' | 'todas' | 'fecha' | 'sinmail' | 'pendientes'>('hoy');
   const [fechaFiltro, setFechaFiltro] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
@@ -46,6 +46,8 @@ export default function AdminReservasPage() {
       setFechaFiltro(f);
     } else if (params.get('filtro') === 'sinmail') {
       setFiltro('sinmail');
+    } else if (params.get('filtro') === 'pendientes') {
+      setFiltro('pendientes');
     } else if (!primeraLectura.current) {
       // Se navegó a /admin/reservas sin parámetros (menú): vuelve a la vista normal.
       setFiltro('hoy');
@@ -95,6 +97,43 @@ export default function AdminReservasPage() {
     }
   };
 
+  // Confirmar o rechazar un grupo grande pendiente.
+  const [resolviendo, setResolviendo] = useState<string | null>(null);
+  const [avisoDecision, setAvisoDecision] = useState<{ id: string; texto: string; error: boolean } | null>(null);
+
+  const handleDecision = async (r: Reservation, accion: 'confirmar' | 'rechazar') => {
+    const pregunta =
+      accion === 'confirmar'
+        ? `¿Confirmar la reserva de ${r.nombre} ${r.apellido} (${r.personas} personas)? Se le manda el mail de confirmación.`
+        : `¿Rechazar la reserva de ${r.nombre} ${r.apellido}? Se libera el lugar y se le avisa por mail.`;
+    if (!confirm(pregunta)) return;
+    setResolviendo(r.id);
+    setAvisoDecision(null);
+    try {
+      const res = await fetch(`/api/admin/reservas/${r.id}/decision`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAvisoDecision({ id: r.id, texto: data.error || 'No se pudo resolver la reserva.', error: true });
+      } else if (data.emailEnviado === false) {
+        setAvisoDecision({
+          id: r.id,
+          texto: `Quedó ${accion === 'confirmar' ? 'confirmada' : 'rechazada'}, pero el mail al cliente no salió${
+            data.emailError ? `: ${data.emailError}` : ''
+          }. Avisale por WhatsApp.`,
+          error: true,
+        });
+      }
+      await loadReservas();
+      window.dispatchEvent(new Event(EVENTO_RESERVAS_CAMBIARON));
+    } finally {
+      setResolviendo(null);
+    }
+  };
+
   // Cuando el avisador detecta una reserva nueva, la lista se actualiza sola.
   useEffect(() => {
     if (!listo) return;
@@ -104,6 +143,12 @@ export default function AdminReservasPage() {
   }, [listo, filtro, fechaFiltro]);
 
   const estadoMail = (r: Reservation) => {
+    if (r.estado === 'pendiente') {
+      if (r.emailEstado === 'fallido') {
+        return <div className="text-red-700">✉ No salió el mail de &ldquo;solicitud recibida&rdquo;{r.emailError ? `: ${r.emailError}` : ''}</div>;
+      }
+      return r.emailEstado === 'enviado' ? <div className="text-green-700">✉ Se le avisó que la confirmamos nosotros</div> : null;
+    }
     if (r.estado !== 'confirmada' || r.email.includes('sin-email.union') || !r.emailEstado) return null;
     if (r.emailEstado === 'enviado') {
       return <div className="text-green-700">✉ Mail de confirmación enviado</div>;
@@ -165,6 +210,13 @@ export default function AdminReservasPage() {
           </button>
         </div>
 
+        {avisoDecision && (
+          <div className="mb-6 flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4 font-body text-sm font-semibold text-red-800">
+            <span>{avisoDecision.texto}</span>
+            <button onClick={() => setAvisoDecision(null)} className="text-xs underline">Cerrar</button>
+          </div>
+        )}
+
         <div className="bg-white rounded-xl border border-brasa-200 p-6 mb-8">
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -176,6 +228,7 @@ export default function AdminReservasPage() {
                     { value: 'manana', label: 'Mañana' },
                     { value: 'todas', label: 'Todas' },
                     { value: 'fecha', label: 'Fecha específica' },
+                    { value: 'pendientes', label: '⏳ Por confirmar' },
                     { value: 'sinmail', label: '✉ Sin mail' },
                   ] as const
                 ).map((f) => (
@@ -241,6 +294,11 @@ export default function AdminReservasPage() {
                         <div className="flex-1">
                           <h3 className="font-body font-semibold text-brasa-900">
                             {reserva.nombre} {reserva.apellido}
+                            {reserva.estado === 'pendiente' && (
+                              <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-[11px] font-bold uppercase text-amber-800">
+                                Por confirmar
+                              </span>
+                            )}
                           </h3>
                           <div className="grid sm:grid-cols-2 gap-1.5 mt-2 text-sm font-body text-brasa-900/60">
                             <div>📧 {reserva.email.includes('sin-email.union') ? '—' : reserva.email}</div>
@@ -254,8 +312,22 @@ export default function AdminReservasPage() {
                           </div>
                         </div>
 
-                        <div className="flex gap-2 flex-shrink-0">
-                          {reserva.estado === 'confirmada' ? (
+                        <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
+                          {reserva.estado === 'pendiente' && (
+                            <>
+                              <button onClick={() => handleDecision(reserva, 'confirmar')}
+                                disabled={resolviendo === reserva.id}
+                                className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-body font-semibold hover:bg-green-700 disabled:opacity-50">
+                                {resolviendo === reserva.id ? '…' : '✓ Confirmar'}
+                              </button>
+                              <button onClick={() => handleDecision(reserva, 'rechazar')}
+                                disabled={resolviendo === reserva.id}
+                                className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-body font-semibold hover:bg-red-200 disabled:opacity-50">
+                                Rechazar
+                              </button>
+                            </>
+                          )}
+                          {reserva.estado === 'pendiente' ? null : reserva.estado === 'confirmada' ? (
                             <button onClick={() => handleCancel(reserva.id)}
                               className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-body font-semibold hover:bg-amber-200">
                               Cancelar

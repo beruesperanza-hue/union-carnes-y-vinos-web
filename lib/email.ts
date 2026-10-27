@@ -368,6 +368,8 @@ export interface ReservaParaAviso {
   ubicacion: string;
   comentarios?: string | null;
   origen: string;
+  /** true = grupo grande: queda pendiente y hay que confirmarla desde el panel. */
+  pendiente?: boolean;
 }
 
 /** Aviso interno al local: entró una reserva nueva (web o bot). */
@@ -384,7 +386,12 @@ export async function sendNewReservationAlert(r: ReservaParaAviso): Promise<Resu
     </tr>`;
 
   const contenido = `
-    <p style="margin:0 0 24px 0;">Entró una reserva desde ${origenLabel}:</p>
+    <p style="margin:0 0 ${r.pendiente ? '12px' : '24px'} 0;">Entró una reserva desde ${origenLabel}:</p>
+    ${
+      r.pendiente
+        ? `<p style="margin:0 0 24px 0;padding:12px 16px;background:#FDE8D8;border-left:4px solid #BC3E11;font-weight:bold;">⚠ Es un grupo de ${r.personas} personas: hay que CONFIRMARLA desde el panel (Reservas → Pendientes). El cliente todavía no recibió confirmación.</p>`
+        : ''
+    }
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
       ${fila('Cliente', esc(cliente))}
       ${fila('Fecha', esc(r.fecha))}
@@ -399,6 +406,7 @@ export async function sendNewReservationAlert(r: ReservaParaAviso): Promise<Resu
 
   const texto = [
     `Entró una reserva desde ${origenLabel}:`,
+    ...(r.pendiente ? ['⚠ GRUPO GRANDE: hay que CONFIRMARLA desde el panel (Reservas → Pendientes).'] : []),
     '',
     `Cliente: ${cliente}`,
     `Fecha: ${r.fecha}`,
@@ -412,8 +420,95 @@ export async function sendNewReservationAlert(r: ReservaParaAviso): Promise<Resu
 
   return enviarMail(
     NEGOCIO.emailAvisos,
-    `ENTRÓ NUEVA RESERVA: ${r.fecha}, ${r.hora} · ${r.personas} pers. · ${cliente}`.replace(/[\r\n]+/g, ' '),
-    layout(esc(`Nueva reserva de ${cliente} para el ${r.fecha} a las ${r.hora}.`), 'Entró nueva reserva', contenido),
+    `${r.pendiente ? 'ENTRÓ NUEVA RESERVA — CONFIRMAR' : 'ENTRÓ NUEVA RESERVA'}: ${r.fecha}, ${r.hora} · ${r.personas} pers. · ${cliente}`.replace(/[\r\n]+/g, ' '),
+    layout(esc(`Nueva reserva de ${cliente} para el ${r.fecha} a las ${r.hora}.`), r.pendiente ? 'Reserva por confirmar' : 'Entró nueva reserva', contenido),
+    texto
+  );
+}
+
+/** Cliente: recibimos tu solicitud de un grupo grande, la confirmamos a la brevedad. */
+export async function sendReservationRequestReceived(
+  email: string,
+  nombre: string,
+  fecha: string,
+  hora: string,
+  personas: number,
+  telefono: string,
+  ubicacion: string = UBICACIONES.ADENTRO
+): Promise<ResultadoMail> {
+  const ubicacionLabel = UBICACIONES_LABEL[ubicacion] || UBICACIONES_LABEL[UBICACIONES.ADENTRO];
+
+  const fila = (label: string, valor: string) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #F3E7CE;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#8a7a63;">${label}</td>
+      <td align="right" style="padding:10px 0;border-bottom:1px solid #F3E7CE;font-family:Helvetica,Arial,sans-serif;font-size:16px;color:#17130F;font-weight:bold;">${valor}</td>
+    </tr>`;
+
+  const contenido = `
+    <p style="margin:0 0 16px 0;">Hola <strong>${esc(nombre)}</strong>,</p>
+    <p style="margin:0 0 24px 0;">Recibimos tu solicitud de reserva. Por ser un grupo de ${personas} personas, <strong>la confirmamos nosotros</strong>: te escribimos a la brevedad.</p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+      ${fila('Fecha', fecha)}
+      ${fila('Hora', hora)}
+      ${fila('Personas', String(personas))}
+      ${fila('Mesa', ubicacionLabel)}
+      ${fila('Teléfono', esc(telefono))}
+    </table>
+
+    <p style="margin:0 0 8px 0;"><strong>Todavía no es una reserva confirmada.</strong> Si necesitás una respuesta urgente, escribinos por WhatsApp.</p>
+  `;
+
+  const texto = [
+    `Hola ${nombre},`,
+    '',
+    `Recibimos tu solicitud de reserva. Por ser un grupo de ${personas} personas, la confirmamos nosotros: te escribimos a la brevedad.`,
+    '',
+    `Fecha: ${fecha}`,
+    `Hora: ${hora}`,
+    `Personas: ${personas}`,
+    `Mesa: ${ubicacionLabel}`,
+    `Teléfono: ${telefono}`,
+    '',
+    'Todavía no es una reserva confirmada. Si necesitás una respuesta urgente, escribinos por WhatsApp.',
+    '',
+    PIE_TEXTO,
+  ].join('\n');
+
+  return enviarMail(
+    email,
+    `Recibimos tu solicitud de reserva: ${fecha}, ${hora} · Unión Carnes y Vinos`,
+    layout(`Recibimos tu solicitud para el ${fecha} a las ${hora}. Te confirmamos a la brevedad.`, 'Solicitud recibida', contenido),
+    texto
+  );
+}
+
+/** Cliente: no pudimos confirmar el grupo para ese día/horario. */
+export async function sendReservationRejected(
+  email: string,
+  nombre: string,
+  fecha: string,
+  hora: string
+): Promise<ResultadoMail> {
+  const contenido = `
+    <p style="margin:0 0 16px 0;">Hola <strong>${esc(nombre)}</strong>,</p>
+    <p style="margin:0 0 16px 0;">Lamentablemente <strong>no pudimos confirmar tu reserva</strong> para el ${esc(fecha)} a las ${esc(hora)}.</p>
+    <p style="margin:0 0 8px 0;">Escribinos por WhatsApp y buscamos juntos otro día u horario para tu grupo.</p>
+  `;
+
+  const texto = [
+    `Hola ${nombre},`,
+    '',
+    `Lamentablemente no pudimos confirmar tu reserva para el ${fecha} a las ${hora}.`,
+    'Escribinos por WhatsApp y buscamos juntos otro día u horario para tu grupo.',
+    '',
+    PIE_TEXTO,
+  ].join('\n');
+
+  return enviarMail(
+    email,
+    'No pudimos confirmar tu reserva · Unión Carnes y Vinos',
+    layout('No pudimos confirmar tu reserva.', 'Reserva no confirmada', contenido),
     texto
   );
 }

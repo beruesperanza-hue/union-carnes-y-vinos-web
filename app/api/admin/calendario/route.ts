@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
+import { ESTADOS_OCUPAN_MESA, UBICACIONES } from '@/lib/constants';
 import { dateAFechaISO, diaSemanaDe, fechaISOaDate, hoyEnES, sumarDias } from '@/lib/fechas';
 import { turnosDeRango } from '@/lib/turnos';
 import { cierresEnRango, diaCerradoCompleto, type CierreLite } from '@/lib/cierres';
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       prisma.reservation.findMany({
         where: {
           fecha: { gte: fechaISOaDate(primero), lte: fechaISOaDate(ultimo) },
-          estado: ESTADOS_RESERVA.CONFIRMADA,
+          estado: { in: ESTADOS_OCUPAN_MESA },
         },
         select: { fecha: true, personas: true, ubicacion: true },
       }),

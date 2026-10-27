@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
+import { ESTADOS_OCUPAN_MESA, UBICACIONES } from '@/lib/constants';
 import { diaSemanaDe, esTurnoPasado, fechaISOaDate } from '@/lib/fechas';
 import { cierresDeFecha, diaCerradoCompleto, estadoCierreTurno } from '@/lib/cierres';
 import { turnosDeFecha } from '@/lib/turnos';
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
               fecha,
               hora: horario.hora,
               ubicacion: UBICACIONES.ADENTRO,
-              estado: ESTADOS_RESERVA.CONFIRMADA,
+              estado: { in: ESTADOS_OCUPAN_MESA },
             },
             _sum: { personas: true },
           }),
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
               fecha,
               hora: horario.hora,
               ubicacion: UBICACIONES.VEREDA,
-              estado: ESTADOS_RESERVA.CONFIRMADA,
+              estado: { in: ESTADOS_OCUPAN_MESA },
             },
             _sum: { personas: true },
           }),

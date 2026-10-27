@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
+import { ESTADOS_OCUPAN_MESA, UBICACIONES } from '@/lib/constants';
 import { fechaISOaDate } from '@/lib/fechas';
 import { parsearAlcance } from '@/lib/cierres';
 import { exigirAdminApi } from '@/lib/admin-guard';
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const agregado = await prisma.reservation.aggregate({
       where: {
         fecha: { gte: fechaISOaDate(fechas[0]), lte: fechaISOaDate(fechas[fechas.length - 1]) },
-        estado: ESTADOS_RESERVA.CONFIRMADA,
+        estado: { in: ESTADOS_OCUPAN_MESA },
         ...(hora !== '' ? { hora } : {}),
         ...(sector === 'vereda' ? { ubicacion: UBICACIONES.VEREDA } : {}),
         ...(sector === 'adentro' ? { ubicacion: { not: UBICACIONES.VEREDA } } : {}),

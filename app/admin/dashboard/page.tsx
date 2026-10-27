@@ -14,6 +14,7 @@ interface Stats {
   personasManana: number;
   adentroHoy: number;
   veredaHoy: number;
+  pendientes?: number;
 }
 
 export default function AdminDashboard() {
@@ -71,6 +72,16 @@ export default function AdminDashboard() {
           </div>
         ) : stats ? (
           <>
+            {!!stats.pendientes && stats.pendientes > 0 && (
+              <Link
+                href="/admin/reservas?filtro=pendientes"
+                className="mb-6 block rounded-xl border border-ember-500 bg-ember-500 px-6 py-4 font-body text-white shadow hover:bg-ember-600"
+              >
+                <strong>⏳ {stats.pendientes}</strong>{' '}
+                {stats.pendientes === 1 ? 'reserva de grupo espera' : 'reservas de grupo esperan'} tu confirmación.{' '}
+                <span className="underline">Confirmar →</span>
+              </Link>
+            )}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Tile titulo="Reservas hoy" valor={stats.reservasHoy} sub={`${stats.personasHoy} personas`} icono="📅" />
               <Tile titulo="Reservas mañana" valor={stats.reservasManana} sub={`${stats.personasManana} personas`} icono="🕐" />

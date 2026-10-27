@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
+import { ESTADOS_OCUPAN_MESA, UBICACIONES } from '@/lib/constants';
 import { diaSemanaDe, esTurnoPasado, fechaISOaDate, hoyEnES } from '@/lib/fechas';
 import { turnosDeFecha } from '@/lib/turnos';
 import { cierresDeFecha, diaCerradoCompleto, esFechaISO, estadoCierreTurno } from '@/lib/cierres';
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const [{ turnos: horarios, reemplaza }, reservas, cierres] = await Promise.all([
       turnosDeFecha(fecha),
       prisma.reservation.findMany({
-        where: { fecha: fechaISOaDate(fecha), estado: ESTADOS_RESERVA.CONFIRMADA },
+        where: { fecha: fechaISOaDate(fecha), estado: { in: ESTADOS_OCUPAN_MESA } },
         orderBy: [{ hora: 'asc' }, { createdAt: 'asc' }],
       }),
       cierresDeFecha(fecha),
@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
         hora: r.hora,
         ubicacion: r.ubicacion,
         comentarios: r.comentarios,
+        estado: r.estado,
       })),
     });
   } catch (error) {

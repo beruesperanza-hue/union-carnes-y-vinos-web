@@ -4,7 +4,13 @@ import prisma from '@/lib/db';
 import { sendReservationCancellation, esEmailValido } from '@/lib/email';
 import { enviarConfirmacionDeReserva, avisarReservaNueva } from '@/lib/reservas-mail';
 import { validarReservaPublica } from '@/lib/reservas-validacion';
-import { MENSAJES, ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
+import {
+  MENSAJES,
+  ESTADOS_RESERVA,
+  ESTADOS_OCUPAN_MESA,
+  MAX_PERSONAS_AUTOMATICA,
+  UBICACIONES,
+} from '@/lib/constants';
 import { esTurnoPasado, fechaISOaDate } from '@/lib/fechas';
 import { cierresDeFecha, diaCerradoCompleto, estadoCierreTurno } from '@/lib/cierres';
 import { turnosDeFecha } from '@/lib/turnos';
@@ -78,13 +84,13 @@ export async function createReservation(entrada: CreateReservationData) {
       return { success: false, error: MENSAJES.RESERVA_DUPLICADA };
     }
 
-    // Contar personas reservadas para ese horario y sector
+    // Contar personas reservadas para ese horario y sector (las pendientes también ocupan lugar)
     const reservedCount = await prisma.reservation.aggregate({
       where: {
         fecha,
         hora: data.hora,
         ubicacion,
-        estado: ESTADOS_RESERVA.CONFIRMADA,
+        estado: { in: ESTADOS_OCUPAN_MESA },
       },
       _sum: { personas: true },
     });
@@ -95,6 +101,9 @@ export async function createReservation(entrada: CreateReservationData) {
     if (reservedPersonas + data.personas > capacidadSector) {
       return { success: false, error: MENSAJES.HORARIO_LLENO };
     }
+
+    // Los grupos grandes no se confirman solos: quedan pendientes hasta que el local los confirme.
+    const pendiente = data.personas > MAX_PERSONAS_AUTOMATICA;
 
     const reservation = await prisma.reservation.create({
       data: {
@@ -107,7 +116,7 @@ export async function createReservation(entrada: CreateReservationData) {
         hora: data.hora,
         ubicacion,
         comentarios: data.comentarios,
-        estado: ESTADOS_RESERVA.CONFIRMADA,
+        estado: pendiente ? ESTADOS_RESERVA.PENDIENTE : ESTADOS_RESERVA.CONFIRMADA,
         origen: 'web',
       },
     });
@@ -116,8 +125,8 @@ export async function createReservation(entrada: CreateReservationData) {
     // Mientras tanto la reserva ya está tomada: un problema de mail nunca la cancela.
     // El aviso al local sale en paralelo para no sumar espera al cliente.
     const [{ resultado }] = await Promise.all([
-      enviarConfirmacionDeReserva(reservation),
-      avisarReservaNueva(reservation),
+      enviarConfirmacionDeReserva(reservation, { solicitud: pendiente }),
+      avisarReservaNueva({ ...reservation, pendiente }),
     ]);
 
     revalidatePath('/admin');
@@ -125,8 +134,9 @@ export async function createReservation(entrada: CreateReservationData) {
 
     return {
       success: true,
-      message: MENSAJES.RESERVA_EXITOSA,
+      message: pendiente ? MENSAJES.RESERVA_PENDIENTE : MENSAJES.RESERVA_EXITOSA,
       reservationId: reservation.id,
+      pendiente,
       emailEnviado: resultado.ok,
     };
   } catch (error: any) {

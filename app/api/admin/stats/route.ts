@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { ESTADOS_RESERVA, UBICACIONES } from '@/lib/constants';
+import { ESTADOS_RESERVA, ESTADOS_OCUPAN_MESA, UBICACIONES } from '@/lib/constants';
 import { fechaISOaDate, hoyEnES, sumarDias } from '@/lib/fechas';
 import { exigirAdminApi } from '@/lib/admin-guard';
 
@@ -14,17 +14,20 @@ export async function GET() {
     const hoy = fechaISOaDate(hoyISO);
     const manana = fechaISOaDate(mananaISO);
 
-    const [reservasHoy, reservasManana, totalReservas, totalPersonas] = await Promise.all([
+    const [reservasHoy, reservasManana, totalReservas, totalPersonas, pendientes] = await Promise.all([
       prisma.reservation.findMany({
-        where: { fecha: hoy, estado: ESTADOS_RESERVA.CONFIRMADA },
+        where: { fecha: hoy, estado: { in: ESTADOS_OCUPAN_MESA } },
       }),
       prisma.reservation.findMany({
-        where: { fecha: manana, estado: ESTADOS_RESERVA.CONFIRMADA },
+        where: { fecha: manana, estado: { in: ESTADOS_OCUPAN_MESA } },
       }),
       prisma.reservation.count({ where: { estado: ESTADOS_RESERVA.CONFIRMADA } }),
       prisma.reservation.aggregate({
         where: { estado: ESTADOS_RESERVA.CONFIRMADA },
         _sum: { personas: true },
+      }),
+      prisma.reservation.count({
+        where: { estado: ESTADOS_RESERVA.PENDIENTE, fecha: { gte: hoy } },
       }),
     ]);
 
@@ -43,6 +46,7 @@ export async function GET() {
       personasManana,
       adentroHoy: personasHoy - veredaHoy,
       veredaHoy,
+      pendientes,
     });
   } catch (error) {
     console.error('Error en stats:', error);

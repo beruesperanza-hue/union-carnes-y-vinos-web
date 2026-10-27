@@ -99,8 +99,15 @@ export const ESTADOS_RESERVA = {
   PENDIENTE: 'pendiente',
 };
 
+/** Hasta esta cantidad de personas la reserva web se confirma sola; con más, la confirma el local. */
+export const MAX_PERSONAS_AUTOMATICA = 4;
+
+/** Estados que ocupan mesa: una reserva pendiente también reserva lugar hasta que se resuelva. */
+export const ESTADOS_OCUPAN_MESA = [ESTADOS_RESERVA.CONFIRMADA, ESTADOS_RESERVA.PENDIENTE];
+
 export const MENSAJES = {
   RESERVA_EXITOSA: '¡Gracias! Tu reserva fue realizada correctamente.',
+  RESERVA_PENDIENTE: 'Recibimos tu solicitud. Te confirmamos la reserva a la brevedad.',
   RESERVA_DUPLICADA: 'Ya existe una reserva para este horario con tu email.',
   HORARIO_LLENO: 'Lo siento, este horario está completamente lleno.',
   TURNO_PASADO: 'Ese horario ya pasó. Elegí uno más tarde o para otro día.',
