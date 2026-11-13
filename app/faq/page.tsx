@@ -37,7 +37,7 @@ const faqs = [
   },
   {
     pregunta: '¿Qué vinos ofrecen?',
-    respuesta: 'Malbec argentino y tintos españoles de Ribera y Rioja.',
+    respuesta: 'Malbec de Mendoza y Salta, Pinot Noir y Chardonnay de Patagonia, Cabernet Sauvignon y Cabernet Franc argentinos, y tintos, rosado y blancos españoles. Botellas desde 20 € y varias etiquetas por copa.',
   },
   {
     pregunta: '¿Puedo encargar postres especiales?',
@@ -49,7 +49,7 @@ const faqs = [
   },
   {
     pregunta: '¿Cuál es el rango de precios?',
-    respuesta: 'Carnes: 23-27 €. Postres: 24-36 €. Ticket promedio: 40-50 € por persona.',
+    respuesta: 'Carnes: 23-28 €. Postres: 6-14 €. Ticket promedio: 40-50 € por persona.',
   },
   {
     pregunta: '¿Cómo hago una reserva?',

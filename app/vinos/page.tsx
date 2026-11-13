@@ -9,7 +9,7 @@ import { NEGOCIO } from '@/lib/constants';
 export const metadata: Metadata = {
   title: 'Vinos Argentinos y Españoles',
   description:
-    'Malbec de Mendoza, blends patagónicos y referencias españolas elegidas para carne a la parrilla. Descubre nuestra bodega en Ruzafa, Valencia.',
+    'Malbec de Mendoza y Salta, Pinot Noir y Chardonnay de Patagonia, y referencias españolas elegidas para carne a la parrilla. Carta de vinos con precios, en Ruzafa, Valencia.',
   alternates: { canonical: '/vinos' },
 };
 
@@ -30,8 +30,8 @@ export default function VinosPage() {
           </h1>
           <p className="font-body text-brasa-200 mt-5 max-w-[52ch]">
             Elegimos cada etiqueta pensando en la parrilla: Malbec de Mendoza y Salta, blends
-            patagónicos, y una selección española de Ribera, Rioja y Valencia para quien prefiere
-            quedarse cerca de casa.
+            patagónicos, y una selección española de Ribera del Duero, Rioja y Rías Baixas para quien prefiere
+            quedarse cerca de casa. Un precio solo es la botella; &ldquo;4 / 25 €&rdquo; es copa / botella.
           </p>
         </div>
       </section>
@@ -39,7 +39,7 @@ export default function VinosPage() {
       <section className="container-page py-16">
         <h2 className="font-display uppercase text-3xl text-brasa-900 mb-1">🇦🇷 Argentina</h2>
         <Link href="/vinos-argentinos-valencia" className="font-body text-sm text-brasa-900/50 underline underline-offset-4 hover:text-ember-600 inline-block mb-4">
-          Guía completa de nuestros vinos argentinos →
+          Todos los vinos argentinos, por uva y región →
         </Link>
         <div className="rule-gold w-24 mb-7" />
         <div className="grid md:grid-cols-3 gap-x-10 gap-y-8">

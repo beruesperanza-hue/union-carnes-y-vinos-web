@@ -156,9 +156,14 @@ export default function Home() {
               Domaine Bousquet — y una selección de tintos de Ribera y Rioja para quien prefiera
               lo español.
             </p>
-            <Link href="/vinos" className="btn btn-outline">
-              Ver la carta de vinos
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/vinos-argentinos-valencia" className="btn btn-outline">
+                Vinos argentinos
+              </Link>
+              <Link href="/vinos" className="btn btn-outline">
+                Carta de vinos completa
+              </Link>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {['Amalaya Malbec', 'Saurus Malbec', 'Domaine Bousquet', 'Rioja Vega Crianza'].map((v) => (

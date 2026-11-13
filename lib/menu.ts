@@ -1,5 +1,5 @@
-// Carta real de Unión Carnes y Vinos, transcripta de cartaa4agosto.pdf
-// (versión vigente ago-2026). Precios en euros. Los códigos de alérgenos
+// Carta real de Unión Carnes y Vinos, transcripta de CARTANOV.pdf
+// (versión vigente nov-2026). Precios en euros. Los códigos de alérgenos
 // siguen la leyenda impresa en la carta física — ver ALERGENOS abajo.
 // Traducciones: ES (base), EN, IT, FR, DE — usadas por /carta, /en/carta,
 // /it/carta, /fr/carta y /de/carta.
@@ -129,33 +129,6 @@ export const CARTA_COMIDA: SeccionCarta[] = [
     tituloDe: 'Kleine Gerichte',
     platos: [
       {
-        nombre: 'Alcachofas con tacos de jamón y queso parmesano',
-        nombreEn: 'Artichokes with ham and parmesan',
-        nombreIt: 'Carciofi con dadini di prosciutto e parmigiano',
-        nombreFr: 'Artichauts, dés de jambon et parmesan',
-        nombreDe: 'Artischocken mit Schinkenwürfeln und Parmesan',
-        precio: '9,5 €',
-        alergenos: ['c', 'd'],
-      },
-      {
-        nombre: 'Tosta de chambota con anchoas',
-        nombreEn: 'Toast with tuna spread & anchovies',
-        nombreIt: 'Crostone con paté di tonno e acciughe',
-        nombreFr: 'Tartine de rillettes de thon et anchois',
-        nombreDe: 'Toast mit Thunfischcreme und Sardellen',
-        precio: '9,5 €',
-        alergenos: ['c', 'd'],
-      },
-      {
-        nombre: 'Berenjenas parmesana',
-        nombreEn: 'Aubergine parmesana',
-        nombreIt: 'Melanzane alla parmigiana',
-        nombreFr: 'Aubergines à la parmesane',
-        nombreDe: 'Auberginen Parmigiana',
-        precio: '11 €',
-        alergenos: ['a', 'c'],
-      },
-      {
         nombre: 'Buñuelos de acelga con mozzarella y alioli (4 ud.)',
         nombreEn: 'Chard fritters with mozzarella & alioli (4 pcs)',
         nombreIt: 'Frittelle di bietola con mozzarella e aioli (4 pz)',
@@ -165,30 +138,31 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         alergenos: ['a', 'b', 'c', 'e'],
       },
       {
-        nombre: 'Provoleta con tomate y pesto',
-        nombreEn: 'Grilled provolone, tomato & pesto',
-        nombreIt: 'Provoleta grigliata con pomodoro e pesto',
-        nombreFr: 'Provoleta grillée, tomate et pesto',
-        nombreDe: 'Gegrillter Provolone mit Tomate und Pesto',
-        precio: '13 €',
+        nombre: 'Berenjenas parmesana',
+        nombreEn: 'Aubergine parmesana',
+        nombreIt: 'Melanzane alla parmigiana',
+        nombreFr: 'Aubergines à la parmesane',
+        nombreDe: 'Auberginen Parmigiana',
+        precio: '12 €',
+        alergenos: ['a', 'c'],
+      },
+      {
+        nombre: 'Provoleta con tomates secos y pesto',
+        nombreEn: 'Grilled provolone, sun-dried tomatoes & pesto',
+        nombreIt: 'Provoleta grigliata con pomodori secchi e pesto',
+        nombreFr: 'Provoleta grillée, tomates séchées et pesto',
+        nombreDe: 'Gegrillter Provolone mit getrockneten Tomaten und Pesto',
+        precio: '14 €',
         alergenos: ['a', 'c', 'd'],
       },
       {
-        nombre: 'Ñoquis con burrata, pesto y cherry salteados',
-        nombreEn: 'Gnocchi with burrata, pesto & sautéed cherry tomato',
-        nombreIt: 'Gnocchi con burrata, pesto e pomodorini saltati',
-        nombreFr: 'Gnocchis, burrata, pesto et tomates cerises sautées',
-        nombreDe: 'Gnocchi mit Burrata, Pesto und gebratenen Kirschtomaten',
+        nombre: 'Ñoquis con pesto, parmesano y cherry al horno',
+        nombreEn: 'Gnocchi with pesto, parmesan & oven-roasted cherry tomatoes',
+        nombreIt: 'Gnocchi con pesto, parmigiano e pomodorini al forno',
+        nombreFr: 'Gnocchis au pesto, parmesan et tomates cerises rôties',
+        nombreDe: 'Gnocchi mit Pesto, Parmesan und im Ofen gebackenen Kirschtomaten',
         precio: '15 €',
         alergenos: ['a', 'b', 'c', 'd'],
-      },
-      {
-        nombre: 'Costilla madurada "Banderita" con chimi y criolla',
-        nombreEn: "Aged short rib 'Banderita', chimichurri & criolla salsa",
-        nombreIt: "Costine di manzo frollate 'Banderita' con chimichurri e salsa criolla",
-        nombreFr: "Côtes de bœuf maturées 'Banderita', chimichurri et sauce criolla",
-        nombreDe: "Gereiftes Rippenstück 'Banderita' mit Chimichurri und Criolla-Sauce",
-        precio: '14 €',
       },
       {
         nombre: 'Chorizo criollo con pan a la chapa y criolla',
@@ -200,12 +174,28 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         alergenos: ['b'],
       },
       {
+        nombre: 'Huevo con morcilla vasca (dulce) y pimientos de piquillo',
+        nombreEn: 'Egg with sweet Basque blood sausage & piquillo peppers',
+        nombreIt: 'Uovo con sanguinaccio basco (dolce) e peperoni del piquillo',
+        nombreFr: 'Œuf au boudin noir basque (doux) et poivrons del piquillo',
+        nombreDe: 'Ei mit süßer baskischer Blutwurst und Piquillo-Paprika',
+        precio: '10 €',
+      },
+      {
+        nombre: 'Costilla madurada "Banderita" con chimi y criolla',
+        nombreEn: "Aged short rib 'Banderita', chimichurri & criolla salsa",
+        nombreIt: "Costine di manzo frollate 'Banderita' con chimichurri e salsa criolla",
+        nombreFr: "Côtes de bœuf maturées 'Banderita', chimichurri et sauce criolla",
+        nombreDe: "Gereiftes Rippenstück 'Banderita' mit Chimichurri und Criolla-Sauce",
+        precio: '15 €',
+      },
+      {
         nombre: 'Mollejas de corazón y limón (200 g)',
         nombreEn: 'Grilled heart sweetbreads & lemon (200 g)',
         nombreIt: 'Animelle di cuore grigliate al limone (200 g)',
         nombreFr: 'Ris de cœur grillés au citron (200 g)',
         nombreDe: 'Gegrilltes Herzbries mit Zitrone (200 g)',
-        precio: '16 €',
+        precio: '17 €',
       },
     ],
   },
@@ -295,17 +285,30 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         precio: '24 €',
       },
       {
-        nombre: 'Bife de chorizo con hueso — Lomo alto (Rib-eye, 400 g)',
-        nombreEn: 'Bone-in ribeye (400 g)',
-        nombreIt: 'Bife de chorizo con osso — Costata (Rib-eye, 400 g)',
-        nombreFr: 'Bife de chorizo avec os — Entrecôte (Rib-eye, 400 g)',
-        nombreDe: 'Bife de chorizo mit Knochen — Rib-Eye (400 g)',
+        nombre: 'Picaña vacuna (Top sirloin cap, 300 g)',
+        nombreEn: 'Picanha — top sirloin cap (300 g)',
+        nombreIt: 'Picanha di manzo (Top Sirloin Cap, 300 g)',
+        nombreFr: 'Picanha de bœuf (Top Sirloin Cap, 300 g)',
+        nombreDe: 'Picanha-Rindersteak (Top Sirloin Cap, 300 g)',
+        descripcion: 'Con papas fritas',
+        descripcionEn: 'Served with fries',
+        descripcionIt: 'Con patatine fritte',
+        descripcionFr: 'Servie avec frites',
+        descripcionDe: 'Mit Pommes frites',
+        precio: '25 €',
+      },
+      {
+        nombre: 'Bife de chorizo con hueso — Lomo bajo (Low loin, 500 g)',
+        nombreEn: 'Bone-in sirloin steak (500 g)',
+        nombreIt: 'Bife de chorizo con osso — Lombata (Low Loin, 500 g)',
+        nombreFr: 'Bife de chorizo avec os — Faux-filet (Low Loin, 500 g)',
+        nombreDe: 'Bife de chorizo mit Knochen — Lendenstück (Low Loin, 500 g)',
         descripcion: 'Con papas fritas',
         descripcionEn: 'Served with fries',
         descripcionIt: 'Con patatine fritte',
         descripcionFr: 'Servi avec frites',
         descripcionDe: 'Mit Pommes frites',
-        precio: '27 €',
+        precio: '28 €',
       },
     ],
   },
@@ -335,9 +338,26 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         precio: '7 €',
         alergenos: ['a', 'b', 'c', 'e'],
       },
+      {
+        nombre: 'El tiramisú "correcto" con 2 copas de cava',
+        nombreEn: "The 'proper' tiramisu with 2 glasses of cava",
+        nombreIt: "Il tiramisù 'giusto' con 2 calici di cava",
+        nombreFr: "Le tiramisu « correct » avec 2 coupes de cava",
+        nombreDe: "Das „richtige“ Tiramisu mit 2 Gläsern Cava",
+        precio: '14 €',
+        alergenos: ['a', 'b', 'c', 'e'],
+      },
     ],
   },
 ];
+
+export interface Vino {
+  nombre: string;
+  /** Un número = botella. "4 / 25 €" = copa 4 € / botella 25 €. */
+  precio: string;
+  uva?: string;
+  region?: string;
+}
 
 export interface VinoSeccion {
   id: string;
@@ -347,7 +367,7 @@ export interface VinoSeccion {
   tituloFr: string;
   tituloDe: string;
   origen: 'Argentina' | 'España';
-  vinos: { nombre: string; precio: string }[];
+  vinos: Vino[];
 }
 
 export const VINOS: VinoSeccion[] = [
@@ -360,13 +380,15 @@ export const VINOS: VinoSeccion[] = [
     tituloDe: 'Argentinische Rotweine',
     origen: 'Argentina',
     vinos: [
-      { nombre: 'Saurus Malbec (Patagonia)', precio: '4 / 24 €' },
-      { nombre: 'Saurus Pinot Noir (Patagonia)', precio: '25 €' },
-      { nombre: 'Amalaya Malbec (Salta)', precio: '25 €' },
-      { nombre: 'Furlan Cabernet Sauvignon (Mendoza)', precio: '25 €' },
-      { nombre: 'Domaine Bousquet Premium Malbec (Mendoza)', precio: '28 €' },
-      { nombre: 'Gieco Cabernet Franc (Mendoza)', precio: '29 €' },
-      { nombre: 'Salvaje Orgánico (Malbec)', precio: '34 €' },
+      { nombre: 'Saurus Malbec (Patagonia)', precio: '24 €', uva: 'Malbec', region: 'Patagonia' },
+      { nombre: 'Gieco Malbec Single Vineyard (Mendoza)', precio: '4 / 25 €', uva: 'Malbec', region: 'Mendoza' },
+      { nombre: 'Furlan Malbec Crianza (Mendoza)', precio: '26 €', uva: 'Malbec', region: 'Mendoza' },
+      { nombre: 'Amalaya Malbec (Salta)', precio: '27 €', uva: 'Malbec', region: 'Salta' },
+      { nombre: 'Saurus Select Pinot Noir (Patagonia)', precio: '29 €', uva: 'Pinot Noir', region: 'Patagonia' },
+      { nombre: 'Domaine Bousquet Premium Malbec (Mendoza)', precio: '30 €', uva: 'Malbec', region: 'Mendoza' },
+      { nombre: 'Furlan Cabernet Sauvignon Reserva (Mendoza)', precio: '30 €', uva: 'Cabernet Sauvignon', region: 'Mendoza' },
+      { nombre: 'Gieco Cabernet Franc (Mendoza)', precio: '30 €', uva: 'Cabernet Franc', region: 'Mendoza' },
+      { nombre: 'Salvaje Orgánico (Malbec)', precio: '34 €', uva: 'Malbec' },
     ],
   },
   {
@@ -377,7 +399,7 @@ export const VINOS: VinoSeccion[] = [
     tituloFr: 'Rosé argentin',
     tituloDe: 'Argentinischer Rosé',
     origen: 'Argentina',
-    vinos: [{ nombre: 'Saurus Pinot Noir (Patagonia)', precio: '23 €' }],
+    vinos: [{ nombre: 'Saurus Pinot Noir (Patagonia)', precio: '24 €', uva: 'Pinot Noir', region: 'Patagonia' }],
   },
   {
     id: 'blancos-ar',
@@ -388,8 +410,8 @@ export const VINOS: VinoSeccion[] = [
     tituloDe: 'Argentinische Weißweine',
     origen: 'Argentina',
     vinos: [
-      { nombre: 'Furlan Torrontés (La Rioja)', precio: '22 €' },
-      { nombre: 'Saurus Chardonnay (Patagonia)', precio: '4 / 24 €' },
+      { nombre: 'Furlan Torrontés-Semillón (Mendoza)', precio: '4 / 24 €', uva: 'Torrontés y Semillón', region: 'Mendoza' },
+      { nombre: 'Saurus Chardonnay (Patagonia)', precio: '4 / 24 €', uva: 'Chardonnay', region: 'Patagonia' },
     ],
   },
   {
@@ -401,8 +423,8 @@ export const VINOS: VinoSeccion[] = [
     tituloDe: 'Spanische Rotweine',
     origen: 'España',
     vinos: [
-      { nombre: 'Balandro (Ribera del Duero)', precio: '22 €' },
-      { nombre: 'Rioja Vega Crianza Tempranillo (Rioja)', precio: '4 / 24 €' },
+      { nombre: 'Balandro (Ribera del Duero)', precio: '23 €' },
+      { nombre: 'Rioja Vega Crianza Tempranillo (Rioja)', precio: '24 €' },
     ],
   },
   {
@@ -424,22 +446,49 @@ export const VINOS: VinoSeccion[] = [
     tituloDe: 'Weißweine',
     origen: 'España',
     vinos: [
-      { nombre: 'Palacio de Bornos, Verdejo (Valencia)', precio: '3,5 / 21 €' },
+      { nombre: 'Care, Garnacha y Chardonnay', precio: '22 €' },
+      { nombre: 'Palacio de Bornos, Verdejo', precio: '4 / 23 €' },
       { nombre: 'Mytilus, Albariño (Rías Baixas)', precio: '22 €' },
-      { nombre: 'Care Blend, Garnacha y Chardonnay', precio: '3,5 / 20 €' },
     ],
   },
 ];
 
-export const COCTELES = [
+export interface ItemBebida {
+  nombre: string;
+  precio: string;
+}
+
+export const CERVEZAS: ItemBebida[] = [
+  { nombre: 'Caña Turia Stark', precio: '2,3 €' },
+  { nombre: 'Doble Turia Stark', precio: '3,2 €' },
+  { nombre: 'Tanque Turia Stark', precio: '4,2 €' },
+  { nombre: 'Turia Tostada', precio: '3,2 €' },
+  { nombre: 'Turia 0,0%', precio: '3,2 €' },
+  { nombre: 'Alhambra Reserva', precio: '3,4 €' },
+  { nombre: 'Cerveza sin gluten', precio: '3,2 €' },
+];
+
+export const REFRESCOS_CAFE: ItemBebida[] = [
+  { nombre: 'Refrescos', precio: '2,6 €' },
+  { nombre: 'Agua', precio: '2,6 €' },
+  { nombre: 'Agua con gas', precio: '2,9 €' },
+  { nombre: 'Agua 1 L', precio: '5 €' },
+  { nombre: 'Café illy', precio: '2 €' },
+  { nombre: 'Carajillo', precio: '3 €' },
+  { nombre: 'Bombón', precio: '2,5 €' },
+  { nombre: 'Café con leche', precio: '2,5 €' },
+];
+
+export const COCTELES: ItemBebida[] = [
   { nombre: 'Fernet Branca argentino con Coca-Cola', precio: '10 €' },
   { nombre: 'Gin Tonic (Seagrams o Beefeater)', precio: '9 €' },
   { nombre: 'Aperol Spritz (Aperol, cava y soda)', precio: '9 €' },
   { nombre: 'Campari Orange (Campari y zumo de naranja)', precio: '8 €' },
   { nombre: 'Negroni (Campari, gin y vermut + rodaja de naranja)', precio: '10 €' },
   { nombre: 'Negroni Sbagliato (Campari, cava y vermut)', precio: '11 €' },
-  { nombre: 'Old Fashioned (bourbon, soda, azúcar, angostura, twist de naranja)', precio: '12 €' },
   { nombre: 'Agua de Valencia by Café de las Horas', precio: '10 €' },
   { nombre: 'Vermut (rodaja de limón y aceituna)', precio: '4 €' },
-  { nombre: 'Tinto de verano', precio: '4,5 €' },
+  { nombre: 'Tinto de verano (vino, limón y refresco de limón)', precio: '4,5 €' },
+  { nombre: 'Whisky (Cutty, J&B, Ballantine\'s, Red)', precio: '8 €' },
+  { nombre: 'Johnnie Walker Black Label · Jack Daniel\'s', precio: '10 €' },
 ];

@@ -8,6 +8,7 @@ import Wordmark from './Wordmark';
 const NAV_ES = [
   { href: '/carta', label: 'La carta' },
   { href: '/vinos', label: 'Vinos' },
+  { href: '/vinos-argentinos-valencia', label: 'Vinos argentinos' },
   { href: '/historia', label: 'Historia' },
   { href: '/faq', label: 'Preguntas' },
 ];
@@ -19,6 +20,11 @@ const IDIOMAS = [
   { code: 'fr', label: 'FR', flag: '🇫🇷', prefix: '/fr' },
   { code: 'de', label: 'DE', flag: '🇩🇪', prefix: '/de' },
 ];
+
+// Solo la carta existe en los otros idiomas; el resto de las páginas va a la versión en español.
+function hrefNav(base: string, href: string) {
+  return href === '/carta' ? base + href : href;
+}
 
 const RESERVAR_LABEL: Record<string, string> = {
   es: 'Reservar',
@@ -70,7 +76,7 @@ export default function Header() {
             {NAV_ES.map((item) => (
               <Link
                 key={item.href}
-                href={base + item.href}
+                href={hrefNav(base, item.href)}
                 className="eyebrow text-brasa-200 hover:text-ember-400 transition-colors"
               >
                 {item.label}
@@ -137,7 +143,7 @@ export default function Header() {
             {NAV_ES.map((item) => (
               <Link
                 key={item.href}
-                href={base + item.href}
+                href={hrefNav(base, item.href)}
                 onClick={() => setAbierto(false)}
                 className="py-2.5 text-brasa-100 font-body text-base border-b border-brasa-900/70"
               >

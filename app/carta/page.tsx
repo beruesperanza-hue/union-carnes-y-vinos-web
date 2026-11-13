@@ -4,13 +4,13 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppBoton from '@/components/WhatsAppBoton';
 import { JsonLd, menuSchema } from '@/lib/schema';
-import { CARTA_COMIDA, VINOS, COCTELES, ALERGENOS } from '@/lib/menu';
+import { CARTA_COMIDA, VINOS, COCTELES, CERVEZAS, REFRESCOS_CAFE, ALERGENOS } from '@/lib/menu';
 import { NEGOCIO } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Carta — Empanadas, Parrilla y Postres Argentinos',
   description:
-    'Entraña, bife de chorizo, empanadas cortadas a cuchillo y postres caseros. Carta completa con precios de nuestra parrilla argentina en Ruzafa, Valencia.',
+    'Entraña, picaña, bife de chorizo, empanadas cortadas a cuchillo y postres caseros, más carta de vinos argentinos y españoles. Carta completa con precios, en Ruzafa, Valencia.',
   alternates: {
     canonical: '/carta',
     languages: {
@@ -80,7 +80,7 @@ export default function CartaPage() {
       <section className="bg-malbec-700 py-16 text-brasa-100">
         <div className="container-page">
           <p className="eyebrow text-gold-400 mb-3">Bodega</p>
-          <h2 className="font-display uppercase text-3xl mb-8">Vinos, copas y cervezas</h2>
+          <h2 className="font-display uppercase text-3xl mb-8">Vinos, cervezas y copas</h2>
           <div className="grid md:grid-cols-2 gap-x-10 gap-y-10">
             {VINOS.map((sec) => (
               <div key={sec.id}>
@@ -97,6 +97,38 @@ export default function CartaPage() {
                 </ul>
               </div>
             ))}
+          </div>
+
+          <p className="mt-8 font-body text-sm text-brasa-200">
+            Un precio solo es la botella; &ldquo;4 / 25 €&rdquo; es copa / botella.{' '}
+            <Link href="/vinos-argentinos-valencia" className="text-gold-400 underline underline-offset-4 hover:text-gold-300">
+              Ver los vinos argentinos →
+            </Link>
+          </p>
+
+          <div className="mt-12 grid md:grid-cols-2 gap-x-10 gap-y-10">
+            <div>
+              <h3 className="eyebrow text-brasa-300 mb-3">Cervezas</h3>
+              <ul className="space-y-2">
+                {CERVEZAS.map((c) => (
+                  <li key={c.nombre} className="flex justify-between gap-4 text-sm font-body text-brasa-200">
+                    <span>{c.nombre}</span>
+                    <span className="text-gold-400 whitespace-nowrap">{c.precio}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="eyebrow text-brasa-300 mb-3">Refrescos y café illy</h3>
+              <ul className="space-y-2">
+                {REFRESCOS_CAFE.map((c) => (
+                  <li key={c.nombre} className="flex justify-between gap-4 text-sm font-body text-brasa-200">
+                    <span>{c.nombre}</span>
+                    <span className="text-gold-400 whitespace-nowrap">{c.precio}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <div className="mt-12">
