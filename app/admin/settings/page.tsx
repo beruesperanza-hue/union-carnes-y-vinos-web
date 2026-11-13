@@ -146,6 +146,8 @@ export default function SettingsPage() {
 
         {settings && <ConfiguracionMail destinoInicial={settings.emailRestaurante} />}
 
+        <CapacidadEnBloque horarios={horarios} onCambiado={loadData} />
+
         <div className="bg-white rounded-xl border border-brasa-200 p-8">
           <h2 className="font-display uppercase text-2xl text-brasa-900 mb-2">Horarios y capacidad</h2>
           <p className="font-body text-sm text-brasa-900/50 mb-6">
@@ -225,6 +227,107 @@ export default function SettingsPage() {
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+/** Cambia cuántas personas entran en varios horarios de una vez (por hora, por día o ambos). */
+function CapacidadEnBloque({ horarios, onCambiado }: { horarios: Schedule[]; onCambiado: () => Promise<void> }) {
+  const [dia, setDia] = useState('');
+  const [hora, setHora] = useState('');
+  const [adentro, setAdentro] = useState('');
+  const [terraza, setTerraza] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [mensaje, setMensaje] = useState<{ texto: string; error: boolean } | null>(null);
+
+  const horasExistentes = Array.from(new Set(horarios.map((h) => h.hora))).sort();
+  const alcanza = horarios.filter((h) => (!dia || h.dia === dia) && (!hora || h.hora === hora)).length;
+
+  const numeroValido = (v: string) => v === '' || (/^\d+$/.test(v) && Number(v) <= 500);
+  const hayDato = adentro !== '' || terraza !== '';
+  const valido = numeroValido(adentro) && numeroValido(terraza) && hayDato && alcanza > 0;
+
+  const aplicar = async () => {
+    const donde = `${dia ? `los ${dia}` : 'todos los días'}${hora ? ` a las ${hora}` : ', en todos los horarios'}`;
+    if (!confirm(`Se cambia la capacidad de ${alcanza} horario${alcanza === 1 ? '' : 's'} (${donde}). ¿Seguimos?`)) return;
+    setGuardando(true);
+    setMensaje(null);
+    try {
+      const res = await fetch('/api/admin/horarios/lote', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...(dia ? { dia } : {}),
+          ...(hora ? { hora } : {}),
+          ...(adentro !== '' ? { capacidad: Number(adentro) } : {}),
+          ...(terraza !== '' ? { capacidadVereda: Number(terraza) } : {}),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMensaje({ texto: data.error || 'No se pudo cambiar.', error: true });
+      } else {
+        setMensaje({ texto: `Listo: ${data.cambiados} horario${data.cambiados === 1 ? '' : 's'} actualizado${data.cambiados === 1 ? '' : 's'}. Ya lo ve el cliente.`, error: false });
+        setAdentro('');
+        setTerraza('');
+        await onCambiado();
+      }
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const selectCls = 'w-full border border-brasa-200 rounded-lg px-3 py-2 font-body text-sm bg-white';
+  return (
+    <div className="bg-white rounded-xl border border-brasa-200 p-8 mb-8">
+      <h2 className="font-display uppercase text-2xl text-brasa-900 mb-2">Cuántos entran, en bloque</h2>
+      <p className="font-body text-sm text-brasa-900/50 mb-5">
+        Cambiá de una vez la capacidad (en personas) de una hora en todos los días, de un día entero o de todo.
+        Lo que dejes vacío no se toca. Al cliente le aparece &ldquo;Quedan N lugares&rdquo; cuando quedan pocos y
+        &ldquo;Lleno&rdquo; cuando no hay. Para cambiar una fecha puntual, usá el{' '}
+        <Link href="/admin/calendario" className="underline font-semibold">Calendario</Link>.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label className="font-body text-xs font-semibold text-brasa-900/70">
+          Día
+          <select value={dia} onChange={(e) => setDia(e.target.value)} className={`${selectCls} mt-1.5`}>
+            <option value="">Todos los días</option>
+            {DIAS_SEMANA_ORDEN.filter((d) => horarios.some((h) => h.dia === d)).map((d) => (
+              <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+            ))}
+          </select>
+        </label>
+        <label className="font-body text-xs font-semibold text-brasa-900/70">
+          Hora
+          <select value={hora} onChange={(e) => setHora(e.target.value)} className={`${selectCls} mt-1.5`}>
+            <option value="">Todas las horas</option>
+            {horasExistentes.map((h) => <option key={h} value={h}>{h}</option>)}
+          </select>
+        </label>
+        <label className="font-body text-xs font-semibold text-brasa-900/70">
+          🏠 Adentro (personas)
+          <input type="number" min={0} max={500} inputMode="numeric" value={adentro} placeholder="No cambiar"
+            onChange={(e) => setAdentro(e.target.value)} className={`${selectCls} mt-1.5`} />
+        </label>
+        <label className="font-body text-xs font-semibold text-brasa-900/70">
+          ☀️ Terraza (personas)
+          <input type="number" min={0} max={500} inputMode="numeric" value={terraza} placeholder="No cambiar"
+            onChange={(e) => setTerraza(e.target.value)} className={`${selectCls} mt-1.5`} />
+        </label>
+      </div>
+      <div className="mt-5 flex flex-wrap items-center gap-4">
+        <button onClick={aplicar} disabled={guardando || !valido} className="btn btn-ember disabled:opacity-40">
+          {guardando ? 'Aplicando…' : 'Aplicar'}
+        </button>
+        <span className="font-body text-sm text-brasa-900/60">
+          {alcanza === 0 ? 'No hay horarios con ese día y hora.' : `Alcanza a ${alcanza} horario${alcanza === 1 ? '' : 's'}.`}
+        </span>
+        {mensaje && (
+          <span className={`font-body text-sm font-semibold ${mensaje.error ? 'text-red-700' : 'text-green-700'}`}>
+            {mensaje.texto}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

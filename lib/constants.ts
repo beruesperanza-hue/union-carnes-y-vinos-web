@@ -102,6 +102,9 @@ export const ESTADOS_RESERVA = {
 /** Hasta esta cantidad de personas la reserva web se confirma sola; con más, la confirma el local. */
 export const MAX_PERSONAS_AUTOMATICA = 4;
 
+/** Cuando quedan este número de lugares o menos, el formulario público muestra "Quedan N". */
+export const UMBRAL_POCOS_LUGARES = 10;
+
 /** Estados que ocupan mesa: una reserva pendiente también reserva lugar hasta que se resuelva. */
 export const ESTADOS_OCUPAN_MESA = [ESTADOS_RESERVA.CONFIRMADA, ESTADOS_RESERVA.PENDIENTE];
 

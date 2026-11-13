@@ -731,6 +731,21 @@ export default function CalendarioPage() {
                               )}
                             </div>
 
+                            {!bloqueado && !t.adentro.cerradoSemanal && !t.vereda.cerradoSemanal && (
+                              <EditorCapacidad
+                                key={`${seleccion}-${t.hora}`}
+                                turno={t}
+                                ocupado={ocupado}
+                                onGuardar={(capacidad, capacidadVereda) =>
+                                  guardarEspeciales({
+                                    desde: seleccion,
+                                    turnos: [{ hora: t.hora, capacidad, capacidadVereda }],
+                                    reemplaza: detalle.reemplaza,
+                                  })
+                                }
+                              />
+                            )}
+
                             {t.especial && !t.pasado && (
                               <div className="mt-3">
                                 {quitarPendiente?.hora === t.hora ? (
@@ -899,6 +914,85 @@ export default function CalendarioPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+/**
+ * Cambia cuántas personas entran en UN horario de ESTA fecha (adentro y terraza).
+ * Se guarda como horario especial de ese día: el resto de las semanas no cambia, y
+ * "Quitar horario especial" vuelve a la capacidad habitual.
+ */
+function EditorCapacidad({
+  turno,
+  ocupado,
+  onGuardar,
+}: {
+  turno: Turno;
+  ocupado: boolean;
+  onGuardar: (capacidad: number, capacidadVereda: number) => Promise<boolean>;
+}) {
+  const [adentro, setAdentro] = useState(String(turno.adentro.capacidad));
+  const [terraza, setTerraza] = useState(String(turno.vereda.capacidad));
+  const [aviso, setAviso] = useState<string | null>(null);
+
+  // Tras guardar, la pantalla recarga el día: los campos siguen lo que quedó guardado.
+  useEffect(() => {
+    setAdentro(String(turno.adentro.capacidad));
+    setTerraza(String(turno.vereda.capacidad));
+  }, [turno.adentro.capacidad, turno.vereda.capacidad]);
+
+  const a = Number(adentro);
+  const v = Number(terraza);
+  const valido = Number.isInteger(a) && Number.isInteger(v) && a >= 0 && v >= 0 && a <= 500 && v <= 500 && a + v > 0;
+  const cambio = a !== turno.adentro.capacidad || v !== turno.vereda.capacidad;
+  const reservadasMas = (a < turno.adentro.reservadas && a !== turno.adentro.capacidad) ||
+    (v < turno.vereda.reservadas && v !== turno.vereda.capacidad);
+
+  return (
+    <details className="mt-3 group">
+      <summary className="cursor-pointer select-none font-body text-xs font-semibold text-brasa-900/70 hover:text-brasa-900">
+        ✎ Cambiar cuántos entran a las {turno.hora} (solo este día)
+      </summary>
+      <div className="mt-2 rounded-lg bg-brasa-50 border border-brasa-200 p-3 space-y-2">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="font-body text-xs text-brasa-900/70">
+            🏠 Adentro (personas)
+            <input
+              type="number" min={0} max={500} inputMode="numeric" value={adentro}
+              onChange={(e) => { setAdentro(e.target.value); setAviso(null); }}
+              className="mt-1 block w-24 rounded-lg border border-brasa-200 px-2 py-1.5 font-body text-sm text-brasa-900"
+            />
+          </label>
+          <label className="font-body text-xs text-brasa-900/70">
+            ☀️ Terraza (personas)
+            <input
+              type="number" min={0} max={500} inputMode="numeric" value={terraza}
+              onChange={(e) => { setTerraza(e.target.value); setAviso(null); }}
+              className="mt-1 block w-24 rounded-lg border border-brasa-200 px-2 py-1.5 font-body text-sm text-brasa-900"
+            />
+          </label>
+          <button
+            disabled={ocupado || !valido || !cambio}
+            onClick={async () => {
+              const ok = await onGuardar(a, v);
+              if (ok) setAviso('Guardado. Ya lo ve el cliente en el formulario.');
+            }}
+            className="rounded-lg bg-brasa-900 px-3 py-2 font-body text-xs font-semibold text-brasa-100 disabled:opacity-40"
+          >
+            Guardar
+          </button>
+        </div>
+        {!valido && (
+          <p className="font-body text-xs text-red-700">Números enteros entre 0 y 500, y al menos un lugar en total.</p>
+        )}
+        {valido && reservadasMas && (
+          <p className="font-body text-xs text-amber-800">
+            Ya hay más personas reservadas que ese número: las reservas siguen, pero no entran más.
+          </p>
+        )}
+        {aviso && <p className="font-body text-xs font-semibold text-green-700">{aviso}</p>}
+      </div>
+    </details>
   );
 }
 

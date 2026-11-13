@@ -2,15 +2,37 @@
 
 import { useState } from 'react';
 import { createReservation } from '@/app/actions/reservations';
-import { MAX_PERSONAS_AUTOMATICA, NEGOCIO, UBICACIONES, UBICACIONES_LABEL } from '@/lib/constants';
+import {
+  MAX_PERSONAS_AUTOMATICA,
+  NEGOCIO,
+  UBICACIONES,
+  UBICACIONES_LABEL,
+  UMBRAL_POCOS_LUGARES,
+} from '@/lib/constants';
 import { formatearFechaLarga, hoyEnES, sumarDias } from '@/lib/fechas';
 
 interface AvailableSlot {
   hora: string;
   pasado: boolean;
+  /** Lugares que quedan en los sectores abiertos. */
+  libres?: number;
   disponible: boolean;
   salon: { disponible: boolean; libres: number; cerrado: boolean };
   vereda: { existe: boolean; disponible: boolean; libres: number; cerrado: boolean };
+}
+
+/** Texto bajo el horario: cuántos lugares quedan cuando son pocos, o por qué no se puede elegir. */
+function textoCupo(slot: AvailableSlot): string | null {
+  const libres = slot.libres ?? 0;
+  if (slot.pasado) return 'Ya pasó';
+  if (!slot.disponible) {
+    // Sin lugar para el grupo elegido: si todavía queda algo, se lo decimos (puede probar con menos personas).
+    return libres > 0 ? `Solo quedan ${libres}` : 'Lleno';
+  }
+  if (libres > 0 && libres <= UMBRAL_POCOS_LUGARES) {
+    return `Quedan ${libres} ${libres === 1 ? 'lugar' : 'lugares'}`;
+  }
+  return null;
 }
 
 export default function ReservationForm() {
@@ -329,8 +351,10 @@ export default function ReservationForm() {
                     }`}
                   >
                     {slot.hora}
-                    {!slot.disponible && (
-                      <div className="text-[10px]">{slot.pasado ? 'Ya pasó' : 'Lleno'}</div>
+                    {textoCupo(slot) && (
+                      <div className={`text-[10px] ${slot.disponible ? 'text-ember-600' : ''}`}>
+                        {textoCupo(slot)}
+                      </div>
                     )}
                   </button>
                 ))}

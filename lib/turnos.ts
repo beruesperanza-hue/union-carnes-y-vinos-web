@@ -151,7 +151,7 @@ function esHoraTurno(valor: unknown): valor is string {
   return typeof valor === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(valor);
 }
 
-function esCapacidad(valor: unknown): valor is number {
+export function esCapacidad(valor: unknown): valor is number {
   return Number.isInteger(valor) && (valor as number) >= 0 && (valor as number) <= MAX_CAPACIDAD;
 }
 

@@ -85,9 +85,16 @@ export async function GET(request: NextRequest) {
         const veredaDisponible =
           veredaExiste && !pasado && !veredaCerrada && veredaLibres >= personas;
 
+        // Lugares que quedan en los sectores abiertos (lo que ve el cliente como "Quedan N").
+        const libres = pasado
+          ? 0
+          : (salonCerrado ? 0 : Math.max(0, salonLibres)) +
+            (veredaExiste && !veredaCerrada ? Math.max(0, veredaLibres) : 0);
+
         return {
           hora: horario.hora,
           pasado,
+          libres,
           disponible: salonDisponible || veredaDisponible,
           salon: { disponible: salonDisponible, libres: salonLibres, cerrado: salonCerrado },
           vereda: {
