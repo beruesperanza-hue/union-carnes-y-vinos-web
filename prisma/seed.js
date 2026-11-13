@@ -20,9 +20,9 @@ async function main() {
       },
     });
 
-    // Horarios (oct-2026): lunes/jueves/viernes cenas hasta 23:00, sábado almuerzo
-    // 14:00–16:00 y cenas hasta 23:30, domingo cerrado. Los turnos son las horas de
-    // última mesa (cierre menos 1:30). Ver prisma/horarios-2026-10.js (producción).
+    // Horarios: se puede reservar hasta las 22:00 (lunes/jueves) y 22:30 (viernes/sábado);
+    // sábado también almuerzo 14:00–14:30; domingo cerrado. Los turnos son las horas
+    // reservables. Ver prisma/horarios-2026-10.js (producción).
     // Capacidad de vereda arranca en 0 — hay que cargarla real en Configuración.
     const turnos = require('./horarios-2026-10').TURNOS;
 
