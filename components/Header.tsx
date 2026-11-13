@@ -19,6 +19,8 @@ const IDIOMAS = [
   { code: 'it', label: 'IT', flag: '🇮🇹', prefix: '/it' },
   { code: 'fr', label: 'FR', flag: '🇫🇷', prefix: '/fr' },
   { code: 'de', label: 'DE', flag: '🇩🇪', prefix: '/de' },
+  { code: 'pt', label: 'PT', flag: '🇵🇹', prefix: '/pt' },
+  { code: 'sv', label: 'SV', flag: '🇸🇪', prefix: '/sv' },
 ];
 
 // Solo la carta existe en los otros idiomas; el resto de las páginas va a la versión en español.
@@ -32,6 +34,8 @@ const RESERVAR_LABEL: Record<string, string> = {
   it: 'Prenota',
   fr: 'Réserver',
   de: 'Reservieren',
+  pt: 'Reservar',
+  sv: 'Boka bord',
 };
 
 export default function Header() {
@@ -115,8 +119,8 @@ export default function Header() {
 
       {esCarta && (
         <div className="md:hidden border-t border-brasa-900 bg-brasa-900/40">
-          <div className="container-page flex items-center justify-between gap-3 py-2.5">
-            <div className="flex items-center gap-3.5">
+          <div className="container-page flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-2.5">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               {IDIOMAS.map((idioma) => (
                 <Link
                   key={idioma.code}

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Wordmark from './Wordmark';
 import { NEGOCIO } from '@/lib/constants';
 
-type Lang = 'es' | 'en' | 'it' | 'fr' | 'de';
+type Lang = 'es' | 'en' | 'it' | 'fr' | 'de' | 'pt' | 'sv';
 
 const DIAS: Record<Lang, Record<string, string>> = {
   es: {},
@@ -10,6 +10,8 @@ const DIAS: Record<Lang, Record<string, string>> = {
   it: { Lunes: 'Lunedì', Martes: 'Martedì', Miércoles: 'Mercoledì', Jueves: 'Giovedì', Viernes: 'Venerdì', Sábado: 'Sabato', Domingo: 'Domenica', Cerrado: 'Chiuso' },
   fr: { Lunes: 'Lundi', Martes: 'Mardi', Miércoles: 'Mercredi', Jueves: 'Jeudi', Viernes: 'Vendredi', Sábado: 'Samedi', Domingo: 'Dimanche', Cerrado: 'Fermé' },
   de: { Lunes: 'Montag', Martes: 'Dienstag', Miércoles: 'Mittwoch', Jueves: 'Donnerstag', Viernes: 'Freitag', Sábado: 'Samstag', Domingo: 'Sonntag', Cerrado: 'Geschlossen' },
+  pt: { Lunes: 'Segunda-feira', Martes: 'Terça-feira', Miércoles: 'Quarta-feira', Jueves: 'Quinta-feira', Viernes: 'Sexta-feira', Sábado: 'Sábado', Domingo: 'Domingo', Cerrado: 'Fechado' },
+  sv: { Lunes: 'Måndag', Martes: 'Tisdag', Miércoles: 'Onsdag', Jueves: 'Torsdag', Viernes: 'Fredag', Sábado: 'Lördag', Domingo: 'Söndag', Cerrado: 'Stängt' },
 };
 
 const TEXTOS: Record<Lang, {
@@ -64,6 +66,24 @@ const TEXTOS: Record<Lang, {
     horario: 'Öffnungszeiten',
     derechos: 'Alle Rechte vorbehalten.',
     verOtroIdioma: 'Auf Spanisch ansehen',
+    verOtroIdiomaHref: '/carta',
+  },
+  pt: {
+    tagline: 'Parrilla argentina em Ruzafa, Valência. Projeto familiar desde 2019.',
+    visitanos: 'Visite-nos',
+    llamar: 'Ligar para o restaurante',
+    horario: 'Horário',
+    derechos: 'Todos os direitos reservados.',
+    verOtroIdioma: 'Ver em espanhol',
+    verOtroIdiomaHref: '/carta',
+  },
+  sv: {
+    tagline: 'Argentinsk grill i Ruzafa, Valencia. Ett familjeprojekt sedan 2019.',
+    visitanos: 'Besök oss',
+    llamar: 'Ring restaurangen',
+    horario: 'Öppettider',
+    derechos: 'Alla rättigheter förbehållna.',
+    verOtroIdioma: 'Visa på spanska',
     verOtroIdiomaHref: '/carta',
   },
 };

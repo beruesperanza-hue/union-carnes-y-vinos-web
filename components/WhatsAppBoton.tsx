@@ -1,6 +1,6 @@
 import { NEGOCIO } from '@/lib/constants';
 
-type Lang = 'es' | 'en' | 'it' | 'fr' | 'de';
+type Lang = 'es' | 'en' | 'it' | 'fr' | 'de' | 'pt' | 'sv';
 
 const TEXTOS: Record<Lang, { boton: string; aria: string }> = {
   es: { boton: 'Escribinos', aria: 'Escribinos por WhatsApp' },
@@ -8,6 +8,8 @@ const TEXTOS: Record<Lang, { boton: string; aria: string }> = {
   it: { boton: 'WhatsApp', aria: 'Scrivici su WhatsApp' },
   fr: { boton: 'WhatsApp', aria: 'Écrivez-nous sur WhatsApp' },
   de: { boton: 'WhatsApp', aria: 'Schreiben Sie uns auf WhatsApp' },
+  pt: { boton: 'WhatsApp', aria: 'Fale connosco no WhatsApp' },
+  sv: { boton: 'WhatsApp', aria: 'Skriv till oss på WhatsApp' },
 };
 
 export default function WhatsAppBoton({ lang = 'es' }: { lang?: Lang }) {

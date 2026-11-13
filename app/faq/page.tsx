@@ -49,7 +49,7 @@ const faqs = [
   },
   {
     pregunta: '¿Cuál es el rango de precios?',
-    respuesta: 'Carnes: 23-28 €. Postres: 6-14 €. Ticket promedio: 40-50 € por persona.',
+    respuesta: 'Carnes: 23-28 €. Postres: 24-36 €. Ticket promedio: 40-50 € por persona.',
   },
   {
     pregunta: '¿Cómo hago una reserva?',

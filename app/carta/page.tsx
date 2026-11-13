@@ -19,6 +19,8 @@ export const metadata: Metadata = {
       'it-IT': '/it/carta',
       'fr-FR': '/fr/carta',
       'de-DE': '/de/carta',
+      'pt-PT': '/pt/carta',
+      'sv-SE': '/sv/carta',
     },
   },
 };

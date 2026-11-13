@@ -18,6 +18,8 @@ export const metadata: Metadata = {
       'it-IT': '/it/carta',
       'fr-FR': '/fr/carta',
       'de-DE': '/de/carta',
+      'pt-PT': '/pt/carta',
+      'sv-SE': '/sv/carta',
     },
   },
 };
@@ -86,6 +88,7 @@ export default function CartaIT() {
               </div>
             ))}
           </div>
+          <p className="mt-8 font-body text-sm text-brasa-200">Un solo prezzo è la bottiglia; &ldquo;4 / 25 €&rdquo; è calice / bottiglia.</p>
         </div>
       </section>
 

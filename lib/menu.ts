@@ -1,8 +1,8 @@
 // Carta real de Unión Carnes y Vinos, transcripta de CARTANOV.pdf
 // (versión vigente nov-2026). Precios en euros. Los códigos de alérgenos
 // siguen la leyenda impresa en la carta física — ver ALERGENOS abajo.
-// Traducciones: ES (base), EN, IT, FR, DE — usadas por /carta, /en/carta,
-// /it/carta, /fr/carta y /de/carta.
+// Traducciones: ES (base), EN, IT, FR, DE, PT, SV — usadas por /carta, /en/carta,
+// /it/carta, /fr/carta, /de/carta, /pt/carta y /sv/carta.
 
 export interface Plato {
   nombre: string;
@@ -10,11 +10,15 @@ export interface Plato {
   nombreIt?: string;
   nombreFr?: string;
   nombreDe?: string;
+  nombrePt?: string;
+  nombreSv?: string;
   descripcion?: string;
   descripcionEn?: string;
   descripcionIt?: string;
   descripcionFr?: string;
   descripcionDe?: string;
+  descripcionPt?: string;
+  descripcionSv?: string;
   precio: string;
   alergenos?: string[];
 }
@@ -26,6 +30,8 @@ export interface SeccionCarta {
   tituloIt: string;
   tituloFr: string;
   tituloDe: string;
+  tituloPt: string;
+  tituloSv: string;
   platos: Plato[];
 }
 
@@ -82,6 +88,24 @@ export const ALERGENOS_DE: Record<string, string> = {
   j: 'senf',
 };
 
+export const ALERGENOS_PT: Record<string, string> = {
+  a: 'vegetariano',
+  b: 'glúten',
+  c: 'lacticínios',
+  d: 'frutos secos',
+  e: 'ovos',
+  j: 'mostarda',
+};
+
+export const ALERGENOS_SV: Record<string, string> = {
+  a: 'vegetariskt',
+  b: 'gluten',
+  c: 'mjölkprodukter',
+  d: 'nötter',
+  e: 'ägg',
+  j: 'senap',
+};
+
 export const CARTA_COMIDA: SeccionCarta[] = [
   {
     id: 'empanadas',
@@ -90,6 +114,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
     tituloIt: 'Empanadas',
     tituloFr: 'Empanadas',
     tituloDe: 'Empanadas',
+    tituloPt: 'Empanadas',
+    tituloSv: 'Empanadas',
     platos: [
       {
         nombre: 'Empanada frita de carne cortada a cuchillo',
@@ -97,6 +123,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Empanada fritta di manzo tagliato al coltello',
         nombreFr: 'Empanada frite au bœuf coupé au couteau',
         nombreDe: 'Frittierte Empanada mit handgeschnittenem Rindfleisch',
+        nombrePt: 'Empanada frita de carne cortada à faca',
+        nombreSv: 'Friterad empanada med handskuren nötkött',
         precio: '3,4 €',
         alergenos: ['b', 'e'],
       },
@@ -106,6 +134,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Empanada fritta ai funghi, champignon, mozzarella e gorgonzola',
         nombreFr: 'Empanada frite aux champignons, mozzarella et bleu',
         nombreDe: 'Frittierte Empanada mit Waldpilzen, Mozzarella und Blauschimmelkäse',
+        nombrePt: 'Empanada frita de cogumelos, champignons, mozzarella e queijo azul',
+        nombreSv: 'Friterad empanada med svamp, champinjoner, mozzarella och blåmögelost',
         precio: '3,4 €',
         alergenos: ['a', 'b', 'c'],
       },
@@ -115,6 +145,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Empanada di maiale BBQ agrodolce con salsa piccante',
         nombreFr: 'Empanada de porc BBQ aigre-douce, sauce épicée',
         nombreDe: 'Süß-saure BBQ-Schweinefleisch-Empanada mit scharfer Soße',
+        nombrePt: 'Empanada de porco BBQ agridoce com molho picante',
+        nombreSv: 'Empanada med söt-sur BBQ-fläsk och stark sås',
         precio: '3,4 €',
         alergenos: ['b'],
       },
@@ -127,6 +159,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
     tituloIt: 'Piccoli piatti',
     tituloFr: 'Petites assiettes',
     tituloDe: 'Kleine Gerichte',
+    tituloPt: 'Petiscos',
+    tituloSv: 'Små rätter',
     platos: [
       {
         nombre: 'Buñuelos de acelga con mozzarella y alioli (4 ud.)',
@@ -134,6 +168,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Frittelle di bietola con mozzarella e aioli (4 pz)',
         nombreFr: 'Beignets de blette, mozzarella et aïoli (4 pièces)',
         nombreDe: 'Mangold-Bällchen mit Mozzarella und Aioli (4 Stk.)',
+        nombrePt: 'Bolinhos de acelga com mozzarella e alioli (4 un.)',
+        nombreSv: 'Mangoldbullar med mozzarella och aioli (4 st)',
         precio: '9 €',
         alergenos: ['a', 'b', 'c', 'e'],
       },
@@ -143,6 +179,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Melanzane alla parmigiana',
         nombreFr: 'Aubergines à la parmesane',
         nombreDe: 'Auberginen Parmigiana',
+        nombrePt: 'Beringela à parmegiana',
+        nombreSv: 'Aubergine parmigiana',
         precio: '12 €',
         alergenos: ['a', 'c'],
       },
@@ -152,6 +190,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Provoleta grigliata con pomodori secchi e pesto',
         nombreFr: 'Provoleta grillée, tomates séchées et pesto',
         nombreDe: 'Gegrillter Provolone mit getrockneten Tomaten und Pesto',
+        nombrePt: 'Provoleta grelhada com tomate seco e pesto',
+        nombreSv: 'Grillad provolone med soltorkade tomater och pesto',
         precio: '14 €',
         alergenos: ['a', 'c', 'd'],
       },
@@ -161,6 +201,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Gnocchi con pesto, parmigiano e pomodorini al forno',
         nombreFr: 'Gnocchis au pesto, parmesan et tomates cerises rôties',
         nombreDe: 'Gnocchi mit Pesto, Parmesan und im Ofen gebackenen Kirschtomaten',
+        nombrePt: 'Nhoque com pesto, parmesão e tomate-cereja assado',
+        nombreSv: 'Gnocchi med pesto, parmesan och ugnsbakade körsbärstomater',
         precio: '15 €',
         alergenos: ['a', 'b', 'c', 'd'],
       },
@@ -170,6 +212,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Chorizo criollo con pane alla piastra e salsa criolla',
         nombreFr: 'Chorizo criollo, pain grillé et sauce criolla',
         nombreDe: 'Chorizo criollo mit geröstetem Brot und Criolla-Sauce',
+        nombrePt: 'Chorizo criollo com pão na chapa e molho criolla',
+        nombreSv: 'Chorizo criollo med plåtgrillat bröd och criollasås',
         precio: '8,2 €',
         alergenos: ['b'],
       },
@@ -179,6 +223,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Uovo con sanguinaccio basco (dolce) e peperoni del piquillo',
         nombreFr: 'Œuf au boudin noir basque (doux) et poivrons del piquillo',
         nombreDe: 'Ei mit süßer baskischer Blutwurst und Piquillo-Paprika',
+        nombrePt: 'Ovo com morcela basca (doce) e pimentos piquillo',
+        nombreSv: 'Ägg med söt baskisk blodkorv och piquillopaprika',
         precio: '10 €',
       },
       {
@@ -187,6 +233,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: "Costine di manzo frollate 'Banderita' con chimichurri e salsa criolla",
         nombreFr: "Côtes de bœuf maturées 'Banderita', chimichurri et sauce criolla",
         nombreDe: "Gereiftes Rippenstück 'Banderita' mit Chimichurri und Criolla-Sauce",
+        nombrePt: 'Costela maturada "Banderita" com chimichurri e molho criolla',
+        nombreSv: 'Lagrat revbensspjäll "Banderita" med chimichurri och criollasås',
         precio: '15 €',
       },
       {
@@ -195,6 +243,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Animelle di cuore grigliate al limone (200 g)',
         nombreFr: 'Ris de cœur grillés au citron (200 g)',
         nombreDe: 'Gegrilltes Herzbries mit Zitrone (200 g)',
+        nombrePt: 'Timo grelhado com limão (200 g)',
+        nombreSv: 'Grillad kalvbrässe med citron (200 g)',
         precio: '17 €',
       },
     ],
@@ -206,6 +256,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
     tituloIt: 'Antipasti e contorni',
     tituloFr: 'Entrées et accompagnements',
     tituloDe: 'Vorspeisen & Beilagen',
+    tituloPt: 'Entradas e acompanhamentos',
+    tituloSv: 'Förrätter och tillbehör',
     platos: [
       {
         nombre: 'Ensalada Unión: tomate, olivas, cebolla, cilantro y pepino',
@@ -213,6 +265,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Insalata Unión: pomodoro, olive, cipolla, coriandolo e cetriolo',
         nombreFr: 'Salade Unión : tomate, olives, oignon, coriandre et concombre',
         nombreDe: 'Unión-Salat: Tomate, Oliven, Zwiebel, Koriander und Gurke',
+        nombrePt: 'Salada Unión: tomate, azeitonas, cebola, coentro e pepino',
+        nombreSv: 'Unión-sallad: tomat, oliver, lök, koriander och gurka',
         precio: '9,5 €',
         alergenos: ['a', 'c'],
       },
@@ -222,6 +276,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Cuori di lattuga grigliati con parmigiano e vinaigrette di acciughe',
         nombreFr: 'Cœurs de laitue grillés, parmesan et vinaigrette aux anchois',
         nombreDe: 'Gegrillte Salatherzen mit Parmesan und Sardellen-Vinaigrette',
+        nombrePt: 'Cogollos de alface grelhados com parmesão e vinagrete de anchovas',
+        nombreSv: 'Grillade salladshjärtan med parmesan och ansjovisvinägrett',
         precio: '6,5 €',
         alergenos: ['a', 'b', 'c', 'd', 'j'],
       },
@@ -231,6 +287,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Insalata di rucola, cheddar stagionato, pomodorini e avocado',
         nombreFr: 'Salade de roquette, cheddar affiné, tomates cerises et avocat',
         nombreDe: 'Rucolasalat mit gereiftem Cheddar, Kirschtomaten und Avocado',
+        nombrePt: 'Salada de rúcula, cheddar curado, tomate-cereja e abacate',
+        nombreSv: 'Ruccolasallad med lagrad cheddar, körsbärstomater och avokado',
         precio: '9,5 €',
         alergenos: ['a', 'c'],
       },
@@ -243,6 +301,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
     tituloIt: 'Alla griglia',
     tituloFr: 'Grillades',
     tituloDe: 'Vom Grill',
+    tituloPt: 'Grelhados',
+    tituloSv: 'Från grillen',
     platos: [
       {
         nombre: 'Milanesa vacuna napolitana, tomate, jamón york y mozzarella',
@@ -250,11 +310,15 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Milanesa di manzo alla napoletana, pomodoro, prosciutto cotto e mozzarella',
         nombreFr: 'Milanesa de bœuf napolitaine, tomate, jambon et mozzarella',
         nombreDe: 'Rinder-Milanesa napolitana mit Tomate, gekochtem Schinken und Mozzarella',
+        nombrePt: 'Milanesa de vaca à napolitana, tomate, fiambre e mozzarella',
+        nombreSv: 'Nötmilanesa napolitana med tomat, kokt skinka och mozzarella',
         descripcion: 'Con papas fritas',
         descripcionEn: 'Served with fries',
         descripcionIt: 'Con patatine fritte',
         descripcionFr: 'Servie avec frites',
         descripcionDe: 'Mit Pommes frites',
+        descripcionPt: 'Com batatas fritas',
+        descripcionSv: 'Med pommes frites',
         precio: '23 €',
         alergenos: ['b', 'c', 'e'],
       },
@@ -264,11 +328,15 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Vacío di manzo (Flank Steak, 300 g)',
         nombreFr: 'Bavette de bœuf (300 g)',
         nombreDe: 'Vacío-Rindersteak (Flank Steak, 300 g)',
+        nombrePt: 'Vazio de vaca (Flank steak, 300 g)',
+        nombreSv: 'Vacío av nötkött (Flank steak, 300 g)',
         descripcion: 'Con papas fritas',
         descripcionEn: 'Served with fries',
         descripcionIt: 'Con patatine fritte',
         descripcionFr: 'Servie avec frites',
         descripcionDe: 'Mit Pommes frites',
+        descripcionPt: 'Com batatas fritas',
+        descripcionSv: 'Med pommes frites',
         precio: '23 €',
       },
       {
@@ -277,11 +345,15 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Entraña di manzo scottata su entrambi i lati (Skirt Steak, 300 g)',
         nombreFr: 'Entraña de bœuf saisie des deux côtés (Skirt Steak, 300 g)',
         nombreDe: 'Entraña-Rindersteak, beidseitig scharf gebraten (Skirt Steak, 300 g)',
+        nombrePt: 'Entraña de vaca selada dos dois lados (Skirt steak, 300 g)',
+        nombreSv: 'Entraña av nötkött, snabbstekt på båda sidor (Skirt steak, 300 g)',
         descripcion: 'Con papas fritas · nuestro plato estrella',
         descripcionEn: 'Served with fries · our signature cut',
         descripcionIt: 'Con patatine fritte · il nostro piatto forte',
         descripcionFr: 'Servie avec frites · notre plat signature',
         descripcionDe: 'Mit Pommes frites · unser Signature-Gericht',
+        descripcionPt: 'Com batatas fritas · o nosso prato estrela',
+        descripcionSv: 'Med pommes frites · vår signaturrätt',
         precio: '24 €',
       },
       {
@@ -290,11 +362,15 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Picanha di manzo (Top Sirloin Cap, 300 g)',
         nombreFr: 'Picanha de bœuf (Top Sirloin Cap, 300 g)',
         nombreDe: 'Picanha-Rindersteak (Top Sirloin Cap, 300 g)',
+        nombrePt: 'Picanha de vaca (Top sirloin cap, 300 g)',
+        nombreSv: 'Picanha av nötkött (Top sirloin cap, 300 g)',
         descripcion: 'Con papas fritas',
         descripcionEn: 'Served with fries',
         descripcionIt: 'Con patatine fritte',
         descripcionFr: 'Servie avec frites',
         descripcionDe: 'Mit Pommes frites',
+        descripcionPt: 'Com batatas fritas',
+        descripcionSv: 'Med pommes frites',
         precio: '25 €',
       },
       {
@@ -303,11 +379,15 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Bife de chorizo con osso — Lombata (Low Loin, 500 g)',
         nombreFr: 'Bife de chorizo avec os — Faux-filet (Low Loin, 500 g)',
         nombreDe: 'Bife de chorizo mit Knochen — Lendenstück (Low Loin, 500 g)',
+        nombrePt: 'Bife de chorizo com osso — Lombo baixo (Low loin, 500 g)',
+        nombreSv: 'Bife de chorizo med ben — Ryggbiff (Low loin, 500 g)',
         descripcion: 'Con papas fritas',
         descripcionEn: 'Served with fries',
         descripcionIt: 'Con patatine fritte',
         descripcionFr: 'Servi avec frites',
         descripcionDe: 'Mit Pommes frites',
+        descripcionPt: 'Com batatas fritas',
+        descripcionSv: 'Med pommes frites',
         precio: '28 €',
       },
     ],
@@ -319,6 +399,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
     tituloIt: 'Dolci',
     tituloFr: 'Desserts',
     tituloDe: 'Desserts',
+    tituloPt: 'Sobremesas',
+    tituloSv: 'Efterrätter',
     platos: [
       {
         nombre: 'Chocotorta',
@@ -326,6 +408,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Chocotorta',
         nombreFr: 'Chocotorta',
         nombreDe: 'Chocotorta',
+        nombrePt: 'Chocotorta',
+        nombreSv: 'Chocotorta',
         precio: '6 €',
         alergenos: ['a', 'b', 'c'],
       },
@@ -335,6 +419,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: 'Il tiramisù della mamma',
         nombreFr: 'Le tiramisu de maman',
         nombreDe: 'Mamas Tiramisu',
+        nombrePt: 'O tiramisù da mamã',
+        nombreSv: 'Mammas tiramisu',
         precio: '7 €',
         alergenos: ['a', 'b', 'c', 'e'],
       },
@@ -344,6 +430,8 @@ export const CARTA_COMIDA: SeccionCarta[] = [
         nombreIt: "Il tiramisù 'giusto' con 2 calici di cava",
         nombreFr: "Le tiramisu « correct » avec 2 coupes de cava",
         nombreDe: "Das „richtige“ Tiramisu mit 2 Gläsern Cava",
+        nombrePt: 'O tiramisù "correto" com 2 taças de cava',
+        nombreSv: 'Det "rätta" tiramisun med 2 glas cava',
         precio: '14 €',
         alergenos: ['a', 'b', 'c', 'e'],
       },
@@ -366,6 +454,8 @@ export interface VinoSeccion {
   tituloIt: string;
   tituloFr: string;
   tituloDe: string;
+  tituloPt: string;
+  tituloSv: string;
   origen: 'Argentina' | 'España';
   vinos: Vino[];
 }
@@ -378,6 +468,8 @@ export const VINOS: VinoSeccion[] = [
     tituloIt: 'Rossi argentini',
     tituloFr: 'Rouges argentins',
     tituloDe: 'Argentinische Rotweine',
+    tituloPt: 'Tintos argentinos',
+    tituloSv: 'Argentinska rödviner',
     origen: 'Argentina',
     vinos: [
       { nombre: 'Saurus Malbec (Patagonia)', precio: '24 €', uva: 'Malbec', region: 'Patagonia' },
@@ -398,6 +490,8 @@ export const VINOS: VinoSeccion[] = [
     tituloIt: 'Rosé argentino',
     tituloFr: 'Rosé argentin',
     tituloDe: 'Argentinischer Rosé',
+    tituloPt: 'Rosé argentino',
+    tituloSv: 'Argentinskt rosé',
     origen: 'Argentina',
     vinos: [{ nombre: 'Saurus Pinot Noir (Patagonia)', precio: '24 €', uva: 'Pinot Noir', region: 'Patagonia' }],
   },
@@ -408,6 +502,8 @@ export const VINOS: VinoSeccion[] = [
     tituloIt: 'Bianchi argentini',
     tituloFr: 'Blancs argentins',
     tituloDe: 'Argentinische Weißweine',
+    tituloPt: 'Brancos argentinos',
+    tituloSv: 'Argentinska vita viner',
     origen: 'Argentina',
     vinos: [
       { nombre: 'Furlan Torrontés-Semillón (Mendoza)', precio: '4 / 24 €', uva: 'Torrontés y Semillón', region: 'Mendoza' },
@@ -421,6 +517,8 @@ export const VINOS: VinoSeccion[] = [
     tituloIt: 'Rossi spagnoli',
     tituloFr: 'Rouges espagnols',
     tituloDe: 'Spanische Rotweine',
+    tituloPt: 'Tintos espanhóis',
+    tituloSv: 'Spanska rödviner',
     origen: 'España',
     vinos: [
       { nombre: 'Balandro (Ribera del Duero)', precio: '23 €' },
@@ -434,6 +532,8 @@ export const VINOS: VinoSeccion[] = [
     tituloIt: 'Rosé',
     tituloFr: 'Rosé',
     tituloDe: 'Rosé',
+    tituloPt: 'Rosé',
+    tituloSv: 'Rosé',
     origen: 'España',
     vinos: [{ nombre: 'Care Rosado Solidarity 2024', precio: '20 €' }],
   },
@@ -444,6 +544,8 @@ export const VINOS: VinoSeccion[] = [
     tituloIt: 'Bianchi',
     tituloFr: 'Blancs',
     tituloDe: 'Weißweine',
+    tituloPt: 'Brancos',
+    tituloSv: 'Vita viner',
     origen: 'España',
     vinos: [
       { nombre: 'Care, Garnacha y Chardonnay', precio: '22 €' },
