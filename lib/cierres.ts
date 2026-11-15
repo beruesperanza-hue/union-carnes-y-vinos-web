@@ -4,9 +4,17 @@
 
 import prisma from '@/lib/db';
 import { dateAFechaISO, fechaISOaDate, sumarDias } from '@/lib/fechas';
+import { CORTE_SERVICIO, esServicio, type Servicio } from '@/lib/servicios';
 
 export const SECTORES_CIERRE = ['todos', 'adentro', 'vereda'] as const;
 export type SectorCierre = (typeof SECTORES_CIERRE)[number];
+
+export { SERVICIOS, servicioDeHora, esServicio, CORTE_SERVICIO, type Servicio } from '@/lib/servicios';
+
+/** Filtro Prisma para las horas de un servicio (los cierres de todo el día, hora '', quedan afuera). */
+export function filtroHoraServicio(servicio: Servicio) {
+  return servicio === 'almuerzo' ? { gte: '00:00', lt: CORTE_SERVICIO } : { gte: CORTE_SERVICIO };
+}
 
 /** Tope de días por operación de rango (vacaciones largas entran de sobra). */
 export const MAX_DIAS_RANGO = 92;
@@ -61,6 +69,8 @@ export interface AlcanceCierre {
   hora?: string;
   /** undefined = "cualquiera" (útil para reabrir). */
   sector?: SectorCierre;
+  /** Mediodía o noche completos; si está, `hora` no se usa. */
+  servicio?: Servicio;
 }
 
 /**
@@ -72,6 +82,7 @@ export function parsearAlcance(raw: {
   hasta?: unknown;
   hora?: unknown;
   sector?: unknown;
+  servicio?: unknown;
 }): { ok: true; alcance: AlcanceCierre } | { ok: false; error: string } {
   if (!esFechaISO(raw.desde)) return { ok: false, error: 'Fecha "desde" inválida' };
   const hasta = raw.hasta === undefined || raw.hasta === null ? raw.desde : raw.hasta;
@@ -94,7 +105,14 @@ export function parsearAlcance(raw: {
     sector = raw.sector;
   }
 
-  return { ok: true, alcance: { fechas, hora, sector } };
+  let servicio: Servicio | undefined;
+  if (raw.servicio !== undefined && raw.servicio !== null && raw.servicio !== '') {
+    if (!esServicio(raw.servicio)) return { ok: false, error: 'Servicio inválido' };
+    servicio = raw.servicio;
+    hora = undefined;
+  }
+
+  return { ok: true, alcance: { fechas, hora, sector, servicio } };
 }
 
 /**

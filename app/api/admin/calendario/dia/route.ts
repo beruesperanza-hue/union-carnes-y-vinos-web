@@ -75,6 +75,8 @@ export async function GET(request: NextRequest) {
         nombre: r.nombre,
         apellido: r.apellido,
         telefono: r.telefono,
+        email: r.email.endsWith('@sin-email.union') ? null : r.email,
+        origen: r.origen,
         personas: r.personas,
         hora: r.hora,
         ubicacion: r.ubicacion,

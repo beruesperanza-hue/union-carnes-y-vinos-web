@@ -3,7 +3,15 @@ import prisma from '@/lib/db';
 import { ESTADOS_OCUPAN_MESA, UBICACIONES } from '@/lib/constants';
 import { dateAFechaISO, diaSemanaDe, fechaISOaDate, hoyEnES, sumarDias } from '@/lib/fechas';
 import { turnosDeRango } from '@/lib/turnos';
-import { cierresEnRango, diaCerradoCompleto, type CierreLite } from '@/lib/cierres';
+import {
+  cierresEnRango,
+  diaCerradoCompleto,
+  estadoCierreTurno,
+  servicioDeHora,
+  SERVICIOS,
+  type CierreLite,
+  type Servicio,
+} from '@/lib/cierres';
 import { exigirAdminApi } from '@/lib/admin-guard';
 
 /** Resumen del mes: una fila por día con reservas, personas y estado de cierre. */
@@ -28,7 +36,7 @@ export async function GET(request: NextRequest) {
           fecha: { gte: fechaISOaDate(primero), lte: fechaISOaDate(ultimo) },
           estado: { in: ESTADOS_OCUPAN_MESA },
         },
-        select: { fecha: true, personas: true, ubicacion: true },
+        select: { fecha: true, hora: true, personas: true, ubicacion: true },
       }),
       turnosDeRango(primero, ultimo),
       cierresEnRango(primero, ultimo),
@@ -38,9 +46,13 @@ export async function GET(request: NextRequest) {
       string,
       { reservas: number; personas: number; adentro: number; vereda: number }
     >();
+    const personasPorServicio = new Map<string, Record<Servicio, number>>();
     for (const r of reservas) {
       const f = dateAFechaISO(r.fecha);
       const acc = reservasPorFecha.get(f) || { reservas: 0, personas: 0, adentro: 0, vereda: 0 };
+      const porServicio = personasPorServicio.get(f) || { almuerzo: 0, cena: 0 };
+      porServicio[servicioDeHora(r.hora)] += r.personas;
+      personasPorServicio.set(f, porServicio);
       acc.reservas += 1;
       acc.personas += r.personas;
       if (r.ubicacion === UBICACIONES.VEREDA) acc.vereda += r.personas;
@@ -60,6 +72,26 @@ export async function GET(request: NextRequest) {
       const cerradoDia = diaCerradoCompleto(delDia);
       const resumen = reservasPorFecha.get(f) || { reservas: 0, personas: 0, adentro: 0, vereda: 0 };
       const turnos = turnosPorFecha.get(f)?.turnos ?? [];
+      const personasServ = personasPorServicio.get(f) || { almuerzo: 0, cena: 0 };
+      // Resumen de cada servicio (mediodía / noche): solo los que el día tiene.
+      const servicios = SERVICIOS.flatMap((nombre) => {
+        const delServicio = turnos.filter((t) => servicioDeHora(t.hora) === nombre);
+        if (delServicio.length === 0) return [];
+        const cerrado =
+          cerradoDia ||
+          delServicio.every((t) => {
+            const c = estadoCierreTurno(delDia, t.hora);
+            return c.adentro && (c.vereda || t.capacidadVereda === 0);
+          });
+        return [
+          {
+            servicio: nombre,
+            personas: personasServ[nombre],
+            capacidad: delServicio.reduce((s, t) => s + t.capacidad + t.capacidadVereda, 0),
+            cerrado,
+          },
+        ];
+      });
       dias.push({
         fecha: f,
         diaSemana,
@@ -67,6 +99,7 @@ export async function GET(request: NextRequest) {
         especial: turnos.some((t) => t.especial),
         ...resumen,
         capacidad: turnos.reduce((s, t) => s + t.capacidad + t.capacidadVereda, 0),
+        servicios,
         cerradoDia,
         cerrados: cerradoDia ? 0 : delDia.length,
         motivo: delDia.find((c) => c.hora === '' && c.sector === 'todos')?.motivo ?? null,

@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { ESTADOS_OCUPAN_MESA, UBICACIONES } from '@/lib/constants';
 import { fechaISOaDate } from '@/lib/fechas';
-import { parsearAlcance } from '@/lib/cierres';
+import { filtroHoraServicio, parsearAlcance } from '@/lib/cierres';
 import { exigirAdminApi } from '@/lib/admin-guard';
 
 /**
  * Cuántas reservas confirmadas ya existen dentro de lo que se está por cerrar.
  * Sirve para avisar antes de confirmar: cerrar NO cancela reservas, y la
  * persona del panel tiene que saber a quién avisarle.
- * Query: ?desde=&hasta=&hora=&sector= (mismos valores que POST /api/admin/cierres)
+ * Query: ?desde=&hasta=&hora=&servicio=&sector= (mismos valores que POST /api/admin/cierres)
  */
 export async function GET(request: NextRequest) {
   const sinSesion = await exigirAdminApi();
@@ -21,10 +21,11 @@ export async function GET(request: NextRequest) {
     hasta: q.get('hasta') ?? undefined,
     hora: q.get('hora') ?? undefined,
     sector: q.get('sector') ?? undefined,
+    servicio: q.get('servicio') ?? undefined,
   });
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-  const { fechas } = parsed.alcance;
+  const { fechas, servicio } = parsed.alcance;
   const hora = parsed.alcance.hora ?? '';
   const sector = parsed.alcance.sector ?? 'todos';
 
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
       where: {
         fecha: { gte: fechaISOaDate(fechas[0]), lte: fechaISOaDate(fechas[fechas.length - 1]) },
         estado: { in: ESTADOS_OCUPAN_MESA },
-        ...(hora !== '' ? { hora } : {}),
+        ...(servicio ? { hora: filtroHoraServicio(servicio) } : hora !== '' ? { hora } : {}),
         ...(sector === 'vereda' ? { ubicacion: UBICACIONES.VEREDA } : {}),
         ...(sector === 'adentro' ? { ubicacion: { not: UBICACIONES.VEREDA } } : {}),
       },

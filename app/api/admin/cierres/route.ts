@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { fechaISOaDate, hoyEnES } from '@/lib/fechas';
-import { parsearAlcance } from '@/lib/cierres';
+import { filtroHoraServicio, parsearAlcance, servicioDeHora } from '@/lib/cierres';
+import { turnosDeFecha } from '@/lib/turnos';
 import { exigirAdminApi } from '@/lib/admin-guard';
 import { revalidatePath } from 'next/cache';
 
@@ -16,7 +17,8 @@ async function leerCuerpo(request: NextRequest): Promise<Record<string, unknown>
 
 /**
  * Cierra un día, un rango de días, un turno o un sector.
- * Body: { desde, hasta?, hora? ('' = todo el día), sector? ('todos'|'adentro'|'vereda'), motivo? }
+ * Body: { desde, hasta?, hora? ('' = todo el día), servicio? ('almuerzo'|'cena' = mediodía o noche completos),
+ *        sector? ('todos'|'adentro'|'vereda'), motivo? }
  * No cancela reservas existentes: solo evita las nuevas.
  */
 export async function POST(request: NextRequest) {
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
   const parsed = parsearAlcance(cuerpo);
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-  const { fechas } = parsed.alcance;
+  const { fechas, servicio } = parsed.alcance;
   const hora = parsed.alcance.hora ?? '';
   const sector = parsed.alcance.sector ?? 'todos';
 
@@ -43,12 +45,32 @@ export async function POST(request: NextRequest) {
       : null;
 
   try {
+    // Un servicio (mediodía/noche) se cierra horario por horario: así lo entienden
+    // la disponibilidad pública y la validación al reservar, sin reglas nuevas.
+    const filas: { fecha: string; hora: string }[] = [];
+    if (servicio) {
+      for (const f of fechas) {
+        const { turnos } = await turnosDeFecha(f);
+        for (const t of turnos) {
+          if (servicioDeHora(t.hora) === servicio) filas.push({ fecha: f, hora: t.hora });
+        }
+      }
+      if (filas.length === 0) {
+        return NextResponse.json(
+          { error: `Ese día no tiene horarios de ${servicio === 'almuerzo' ? 'mediodía' : 'noche'}` },
+          { status: 400 }
+        );
+      }
+    } else {
+      for (const f of fechas) filas.push({ fecha: f, hora });
+    }
+
     await prisma.$transaction(
-      fechas.map((f) =>
+      filas.map(({ fecha, hora: h }) =>
         prisma.cierre.upsert({
-          where: { fecha_hora_sector: { fecha: fechaISOaDate(f), hora, sector } },
+          where: { fecha_hora_sector: { fecha: fechaISOaDate(fecha), hora: h, sector } },
           update: { motivo },
-          create: { fecha: fechaISOaDate(f), hora, sector, motivo },
+          create: { fecha: fechaISOaDate(fecha), hora: h, sector, motivo },
         })
       )
     );
@@ -75,13 +97,13 @@ export async function DELETE(request: NextRequest) {
   const parsed = parsearAlcance(cuerpo);
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-  const { fechas, hora, sector } = parsed.alcance;
+  const { fechas, hora, sector, servicio } = parsed.alcance;
 
   try {
     const res = await prisma.cierre.deleteMany({
       where: {
         fecha: { gte: fechaISOaDate(fechas[0]), lte: fechaISOaDate(fechas[fechas.length - 1]) },
-        ...(hora !== undefined ? { hora } : {}),
+        ...(servicio ? { hora: filtroHoraServicio(servicio) } : hora !== undefined ? { hora } : {}),
         ...(sector !== undefined ? { sector } : {}),
       },
     });
